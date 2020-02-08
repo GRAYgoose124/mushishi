@@ -23,19 +23,26 @@ Check the TODO for a glance at future plans.
     mu help
     mu p ls
 
-    mu plugin ld calc
+    mu p ld calc
     mu plot sin(x)
     mu plot sqrt(x)
     mu plot cos(x)/x**2
 
-    mu p ld utils
+    # mu p ld utils
     mu stats
     mu source
 
     mu p ld reaction
     mu reaction forward
 
+    m.p ld factoid
+    m.fact add Hello World! >> Hi Human!
+
 # Installation
 Clone the source to a local directory:
 
     git clone git@github.com:GRAYgoose124/mushishi.git
+
+# Running
+cd to parent directory of mushishi then run:
+    python mushishi

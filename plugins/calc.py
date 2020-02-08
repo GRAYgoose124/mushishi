@@ -16,7 +16,7 @@
 import random
 import time
 import numpy as np
-# from numpy import sin, cos, tan, pi, e, log, log2, sqrt, power
+from numpy import sin, cos, tan, pi, e, log, log2, sqrt, power
 from matplotlib import pyplot as plt
 
 # import scipy

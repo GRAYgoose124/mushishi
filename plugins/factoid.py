@@ -58,6 +58,7 @@ session = DBsession()
 # TODO: chain triggers, event triggers,
 # TODO: periodic/randomized triggers, limited self-trigger
 # TODO: morphological/lexical transformations, markov permutations
+# TODO: conv->factoid gen
 
 
 class FactoidGen:
@@ -74,7 +75,7 @@ class Factoid(Cog):
     """
     def __init__(self, bot):
         self.bot = bot
-        self.last_triggered_by_id = {}
+        self.last_triggered = {}
 
     @commands.group(pass_context=True)
     async def fact(self, ctx):
@@ -135,13 +136,13 @@ class Factoid(Cog):
 
         if factoid and factoid.response != '<NONE>':
             try:
-                if time.clock() - self.last_triggered_by_id[factoid.id] < 900:
+                if time.clock().seconds() - self.last_triggered[factoid.id] < 450:
                     return
             except KeyError:
                 pass
             finally:
                 await message.channel.send(factoid.response)
-                self.last_triggered_by_id[factoid.id] = int(time.clock())
+                self.last_triggered[factoid.id] = time.clock().seconds()
 
 
 def setup(bot):

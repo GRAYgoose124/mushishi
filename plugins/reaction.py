@@ -16,7 +16,7 @@
 from discord.ext import commands
 from discord.errors import NotFound, Forbidden
 from discord.ext.commands import Cog
-
+from discord import DMChannel
 from traceback import print_exc
 
 
@@ -61,17 +61,21 @@ class Reaction(Cog):
             # Erase message
             if r.emoji == "♻":
                 try:
+                    if isinstance(r.message.channel, DMChannel):
+                        return
+
                     rperc = r.count > len(r.message.channel.members) / 3
                     if rperc or user.id == self.bot.owner_id:
                         await r.message.delete()
                 except AttributeError:
                     await r.message.delete()
-                except Forbidden:  # fix by checking if channel is DM
-                    pass
+
             # Rerun command
             elif r.emoji == "🗜" and user.id == r.message.author.id:
                 try:
-                    await r.message.clear_reactions()
+                    for r in r.message.reactions:
+                        if r.me:
+                            await r.message.remove_reaction(r, self.bot.user)
                 finally:
                     await self.bot.process_commands(r.message)
 

@@ -16,10 +16,19 @@
 import os
 from mushishi import Mushishi
 
-if __name__ == '__main__':
+def main():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config_path = os.path.join(dir_path, 'config.json')
-
     bot = Mushishi(config_path)
-    bot.run()
+
+    try:
+        bot.run()
+    except KeyboardInterrupt:
+        print("Interrupted by user. Data may not be saved.")
+        return
+
     print("---Shutdown complete---\nGoodbye.")
+
+
+if __name__ == '__main__':
+    main()

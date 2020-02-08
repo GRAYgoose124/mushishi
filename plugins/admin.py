@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from discord.ext import commands
-from discord.ext.commands import Cog
+from discord.ext.commands import Cog, ExtensionAlreadyLoaded, ExtensionError, ExtensionNotFound
 import traceback
 
 
@@ -24,11 +24,13 @@ class Admin(Cog):
     """
     def __init__(self, bot):
         self.bot = bot
+        self.loaded_plugins = []
         self.interactive = False
 
     async def on_command(self, command):
         real_prefix = command.message.content[:2]
-        if self.interactive and real_prefix == self.bot.config['prefixes'][0]:
+        anyprfx = any([real_prefix == x for x in self.bot.config['prefixes']])
+        if self.interactive and anyprfx:
             if hasattr(command, 'message'):
                 await command.message.delete()
 
@@ -43,8 +45,17 @@ class Admin(Cog):
         """ <name> - load a pod """
         try:
             await self.rm(ctx, plugin)
-            self.bot.load_extension(f'plugins.{plugin}')
-            self.bot.loaded_plugins.append(plugin)
+
+            try:
+                self.bot.load_extension(f'plugins.{plugin}')
+                self.loaded_plugins.append(plugin)
+            except ExtensionError as e:
+                traceback.print_exception(e)
+            except ExtensionAlreadyLoaded:
+                print("Pod reload failed. (Not unloaded)")
+            except ExtensionNotFound:
+                await ctx.send("No such pod exists.")
+
             await ctx.message.add_reaction(emoji='✅')
         except Exception as e:
             if '✅' in ctx.message.reactions:
@@ -58,11 +69,11 @@ class Admin(Cog):
         """ <name> - unload a pod """
         if plugin == "admin":
             await ctx.message.add_reaction(emoji='🚫')
-        elif f'plugins.{plugin}' in self.bot.loaded_plugins:
+        elif plugin in self.loaded_plugins:
             self.bot.unload_extension(f'plugins.{plugin}')
 
-            i = self.bot.loaded_plugins.index(f'plugins.{plugin}')
-            del(self.bot.loaded_plugins[i])
+            i = self.loaded_plugins.index(plugin)
+            del(self.loaded_plugins[i])
 
             await ctx.message.add_reaction(emoji='✅')
 
@@ -72,8 +83,7 @@ class Admin(Cog):
         ps = ""
         for plugin in self.bot.config['plugins']:
             plugin = plugin.strip("*")
-            proper_plugin = f'plugins.{plugin}'
-            if proper_plugin in self.bot.loaded_plugins:
+            if plugin in self.loaded_plugins:
                 ps += f'(✓) {plugin}\n'
             else:
                 ps += f'( ) {plugin}\n'
@@ -86,6 +96,33 @@ class Admin(Cog):
         """ shutdown mushishi """
         await ctx.bot.logout()
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print('---Loading plugins---')
+        self.loaded_plugins = []
+        for plugin in self.bot.config['plugins']:
+            autoload = plugin[0] == '*'
+            if autoload:
+                plugin = plugin[1:]
+                try:
+                    self.bot.load_extension(f'plugins.{plugin}')
+                    self.loaded_plugins.append(plugin)
+                    print(f'Loaded {plugin}...')
+                except Exception as e:
+                    print(e)
+        print('Done loading plugins.')
+        print('---Finished Starting---')
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
+
+
+def teardown(bot):
+    print("---Shutting down---")
+    for plugin in self.loaded_plugins:
+        print(f'Unloading {plugin}...')
+        try:
+            bot.unload_extension(plugin)
+        except AttributeError as e:
+            print_exc(e)

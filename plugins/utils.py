@@ -17,7 +17,8 @@ import time
 import traceback
 import ast
 from os import path
-
+import json
+import re
 from discord import Embed, Colour, NotFound
 from discord.ext import commands
 from discord.ext.commands import Cog
@@ -28,11 +29,8 @@ class Utils(Cog):
         self.bot = bot
         self.last_absence = {'checked': 0, 'average': 0}
         self.last_command = None
-
-        if not hasattr(self.bot, 'uptime'):
-            self.bot.uptime = time.clock()
-        if not hasattr(self.bot, 'status_timestamps'):
-            self.bot.status_timestamps = {}
+        self.uptime = time.clock()
+        self.status_timestamps = {}
 
         # Bot thumbnail
         rh = self.bot.config['resource_host']
@@ -49,7 +47,7 @@ class Utils(Cog):
     async def stats(self, ctx):
         app_info = await self.bot.application_info()
 
-        t = (time.clock() - self.bot.uptime)
+        t = (time.clock() - self.uptime)
         m, s = divmod(t, 60)
         h, m = divmod(m, 60)
         d = h / 24
@@ -136,7 +134,8 @@ class Utils(Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        self.bot.status_timestamps[after.id] = (time.clock(), after.status)
+        self.status_timestamps[after.id] = (time.clock(), after.status)
+
 
 
 def setup(bot):

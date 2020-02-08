@@ -29,10 +29,8 @@ except ImportError:
 
 class Mushishi(commands.Bot):
     def __init__(self, config_path):
-        self.done = True
-        self.chat_history = None
         self.config = {}
-        self.loaded_plugins = []
+        self.chat_history = None
         self.__config_setup(config_path)
 
         self.dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -46,6 +44,7 @@ class Mushishi(commands.Bot):
             with open(self.ch_path, mode='w+'):
                 pass
 
+        # Load chat history
         with open(self.ch_path, mode='r') as f:
             try:
                 self.chat_history = json.load(f)
@@ -71,34 +70,13 @@ class Mushishi(commands.Bot):
 
             raise FileNotFoundError("Please edit the generated config file.")
 
-        def __root_setup(self): pass
-
-    def run(self):
-        self.done = False
-        super().run(self.config['token'])
-
-    async def on_ready(self):
-        print('---Starting---')
-        self.loaded_plugins = []
-        for plugin in self.config['plugins']:
-            autoload = plugin[0] == '*'
-            if autoload:
-                plugin = plugin[1:]
-                try:
-                    self.load_extension(f'plugins.{plugin}')
-                    self.loaded_plugins.append(f'plugins.{plugin}')
-                    print(f'Loaded {plugin}...')
-                except Exception as e:
-                    print(e)
-        print('Done loading plugins.')
-        print('---Finished Starting---')
-
     async def on_message(self, m):
-        tstcmd = [m.content.startswith(x) for x in self.config['prefixes']]
+        botpfx = any([m.content.startswith(x) for x in self.config['prefixes']])
         notbot = m.author.id != self.user.id
-        if not any(tstcmd) and notbot:
+        if not botpfx and notbot:
             chan_name = None
             smc = re.sub('[-:. ]', '', str(m.created_at))
+
             if not hasattr(m.channel, 'name'):
                 chan_name = 'DM'
             else:
@@ -111,28 +89,12 @@ class Mushishi(commands.Bot):
 
         await self.process_commands(m)
 
-    async def close(self):
-        if self.done:  # hack because it's double closing :/
-            return
+    def run(self):
+        self.load_extension('plugins.admin')
 
-        print("---Shutting down---")
-        for plugin in self.loaded_plugins:
-            print(f'Unloading {plugin}...')
-            try:
-                self.unload_extension(plugin)
-            except AttributeError as e:
-                print_exc(e)
+        super().run(self.config['token'])
 
         print("Core: Saving messages...")
         with open(self.ch_path, mode='w+') as f:
             json.dump(self.chat_history, f, sort_keys=True)
         print("Core: Done saving.")
-        self.done = True
-
-        await super().close()
-
-
-if __name__ == '__main__':
-    config_path = 'config.json'
-    bot = Mushishi(config_path)
-    bot.run()
