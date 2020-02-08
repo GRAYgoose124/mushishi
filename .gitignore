@@ -1,0 +1,14 @@
+*.json
+*.pyc
+*.db
+*.log
+.idea/*
+plugins/resources/images/*
+plugins/resources/data/*
+changelog
+scratch*
+.vscode/*
+__pycache__/*
+../*
+.pylintrc
+testbed.ipynb
