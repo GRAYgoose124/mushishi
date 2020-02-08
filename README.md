@@ -21,8 +21,6 @@ Check the TODO for a glance at future plans.
 
 ## Example usage: (w/ base plugins and server configuration)
     mu help
-
-    mu help
     mu p ls
 
     mu plugin ld calc

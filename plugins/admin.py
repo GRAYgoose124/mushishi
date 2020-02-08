@@ -15,9 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from discord.ext import commands
 from discord.ext.commands import Cog
-
 import traceback
-import json
 
 
 class Admin(Cog):
@@ -47,7 +45,6 @@ class Admin(Cog):
             await self.rm(ctx, plugin)
             self.bot.load_extension(f'plugins.{plugin}')
             self.bot.loaded_plugins.append(plugin)
-
             await ctx.message.add_reaction(emoji='✅')
         except Exception as e:
             if '✅' in ctx.message.reactions:
@@ -61,10 +58,12 @@ class Admin(Cog):
         """ <name> - unload a pod """
         if plugin == "admin":
             await ctx.message.add_reaction(emoji='🚫')
-        elif plugin in self.bot.loaded_plugins:
+        elif f'plugins.{plugin}' in self.bot.loaded_plugins:
             self.bot.unload_extension(f'plugins.{plugin}')
-            i = self.bot.loaded_plugins.index(plugin)
-            self.bot.remove_cog(self.bot.loaded_plugins[i])
+
+            i = self.bot.loaded_plugins.index(f'plugins.{plugin}')
+            del(self.bot.loaded_plugins[i])
+
             await ctx.message.add_reaction(emoji='✅')
 
     @p.command()
@@ -87,30 +86,6 @@ class Admin(Cog):
         """ shutdown mushishi """
         await ctx.bot.logout()
 
-    @commands.command()
-    @commands.is_owner()
-    async def restart(self, ctx):
-        """ restarts mushishi """
-        await ctx.bot.logout()
-        await ctx.bot.start()
-
-    @commands.Cog.listener()
-    async def on_message(self, m):
-        tstcmd = [m.content.startswith(x) for x in self.bot.config['prefixes']]
-        if not any(tstcmd) and m.author.id != self.bot.user.id:
-            self.bot.last_messages[m.created_at] = (m.author.name, m.content)
-            print(m.created_at, ': ', self.bot.last_messages[m.created_at])
-
 
 def setup(bot):
     bot.add_cog(Admin(bot))
-
-
-def teardown(bot):
-    print("Saving messages...")
-    with open(bot.lm_path, mode='w') as f:
-        print(bot.last_messages)
-        try:
-            json.dump(bot.last_messages, f)
-        except Exception as e:
-            traceback.print_exc(e)

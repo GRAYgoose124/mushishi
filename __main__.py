@@ -21,8 +21,5 @@ if __name__ == '__main__':
     config_path = os.path.join(dir_path, 'config.json')
 
     bot = Mushishi(config_path)
-
-    try:
-        bot.run()
-    except RuntimeError:
-        print('Bot has quit.',)
+    bot.run()
+    print("---Shutdown complete---\nGoodbye.")

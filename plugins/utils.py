@@ -81,7 +81,7 @@ class Utils(Cog):
 
     @commands.command()
     async def cleancmds(self, ctx):
-        """ <name> - clears recent messages from user"""
+        """Removes all commands user has typed."""
         async for message in ctx.channel.history(limit=20):
             if message.author.name == ctx.message.author.name and \
              any('🗜' == x.emoji or '♻' == x.emoji for x in message.reactions):
@@ -90,11 +90,13 @@ class Utils(Cog):
                 except NotFound:
                     pass
 
+    @commands.is_owner()
     @commands.command()
-    async def cleanall(self, ctx):
+    async def cleanall(self, ctx, name):
         """ <name> - clears recent messages from user"""
-        async for message in ctx.channel.history(limit=15):
-            await message.delete()
+        async for message in ctx.channel.history(limit=100):
+            if message.author.name == name:
+                await message.delete()
 
     # @commands.command()
     # @commands.is_owner()
@@ -139,4 +141,3 @@ class Utils(Cog):
 
 def setup(bot):
     bot.add_cog(Utils(bot))
-    # bot.add_listener(on_member_update)
