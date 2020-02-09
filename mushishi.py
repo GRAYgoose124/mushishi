@@ -18,7 +18,7 @@ import asyncio
 import os
 import re
 from discord.ext import commands
-from traceback import print_exc
+
 
 try:
     import uvloop
@@ -71,9 +71,9 @@ class Mushishi(commands.Bot):
             raise FileNotFoundError("Please edit the generated config file.")
 
     async def on_message(self, m):
-        botpfx = any([m.content.startswith(x) for x in self.config['prefixes']])
+        bpfx = any([m.content.startswith(x) for x in self.config['prefixes']])
         me = m.author.id == self.user.id
-        if not botpfx and not me and m.content != '':
+        if not bpfx and not me and m.content != '':
             chan_name = None
             smc = re.sub('[-:. ]', '', str(m.created_at))
 
@@ -94,7 +94,6 @@ class Mushishi(commands.Bot):
         with open(self.ch_path, mode='w+') as f:
             json.dump(self.chat_history, f, sort_keys=True)
         print("Core: Done saving.")
-
 
     def run(self):
         self.load_extension('plugins.admin')

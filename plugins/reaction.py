@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from discord.ext import commands
-from discord.errors import NotFound, Forbidden
+from discord.errors import NotFound
 from discord.ext.commands import Cog
 from discord import DMChannel
 from traceback import print_exc
@@ -52,7 +52,9 @@ class Reaction(Cog):
     @commands.Cog.listener()
     async def on_command_error(self, command, error):
         # Delete invalid bot command
-        if type(error) == commands.CommandNotFound and not isinstance(command.channel, DMChannel):
+        cmdnotfound = type(error) == commands.CommandNotFound
+        isDM = isinstance(command.channel, DMChannel)
+        if cmdnotfound and not isDM:
             await command.message.delete()
 
     @commands.Cog.listener()

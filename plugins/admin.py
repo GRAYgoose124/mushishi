@@ -14,7 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from discord.ext import commands
-from discord.ext.commands import Cog, ExtensionAlreadyLoaded, ExtensionError, ExtensionNotFound, ExtensionFailed
+from discord.ext.commands import (Cog,
+                                  ExtensionAlreadyLoaded,
+                                  ExtensionError,
+                                  ExtensionNotFound,
+                                  ExtensionFailed)
 import traceback
 
 
@@ -49,20 +53,19 @@ class Admin(Cog):
             self.loaded_plugins.append(plugin)
             print(f'{plugin} loaded.')
             await ctx.message.add_reaction(emoji='✅')
-        except ExtensionError as e:
-            traceback.print_tb(e.__traceback__)
-        except ExtensionFailed as e:
-            print(e)
-            traceback.print_tb(e.__traceback__)
-        except ExtensionAlreadyLoaded:
-            print("Pod reload failed. (Not unloaded)")
-        except ExtensionNotFound:
-            await ctx.send("No such pod exists.")
         except Exception as e:
+            if isinstance(e, ExtensionError):
+                traceback.print_tb(e.__traceback__)
+            if isinstance(e, ExtensionFailed):
+                print(e.args)
+            if isinstance(e, ExtensionAlreadyLoaded):
+                print("Pod reload failed. (Not unloaded)")
+            if isinstance(e, ExtensionNotFound):
+                await ctx.send("No such pod exists.")
+
             if '✅' in ctx.message.reactions:
                 await ctx.message.remove_reaction(emoji='✅')
             await ctx.message.add_reaction(emoji='🔴')
-            traceback.print_tb(e.__traceback__)
 
     @p.command()
     @commands.is_owner()
@@ -76,8 +79,6 @@ class Admin(Cog):
 
             i = self.loaded_plugins.index(plugin)
             del(self.loaded_plugins[i])
-
-            await ctx.message.add_reaction(emoji='✅')
 
     @p.command()
     async def ls(self, ctx):
@@ -121,10 +122,10 @@ def setup(bot):
 
 
 def teardown(bot):
-    print("---Shutting down---")
-    for plugin in self.loaded_plugins:
+    print("---Shutting down plugins---")
+    for plugin in bot.loaded_plugins:
         print(f'Unloading {plugin}...')
         try:
             bot.unload_extension(plugin)
         except AttributeError as e:
-            print_exc(e)
+            traceback.print_tb(e.__traceback__)

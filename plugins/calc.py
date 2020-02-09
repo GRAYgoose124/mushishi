@@ -16,15 +16,12 @@
 import random
 import time
 import numpy as np
-from numpy import sin, cos, tan, pi, e, log, log2, sqrt, power
 from matplotlib import pyplot as plt
-
-import scipy
-import scipy.integrate as integrate
+# import scipy
+# import scipy.integrate as integrate
 from discord import Embed
 from discord.ext import commands
-
-from os import path, getcwd
+from os import path
 from discord.ext.commands import Cog
 
 
@@ -61,7 +58,7 @@ class Calc(Cog):
         """<equation> : RPN calculator"""
         response = None
 
-        stack = [4.0, 4.0]
+        stack = []
         for op in equation:
             try:
                 v = float(op)
@@ -106,7 +103,7 @@ class Calc(Cog):
         await ctx.send(response)
 
 
-class Plot:
+class Plot(Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -125,11 +122,12 @@ class Plot:
                 fig = plt.show(plot)
                 return fig
             else:
+                dir_path = path.dirname(path.realpath(__file__))
                 p = path.join('images', 'tmp_plots', f'plot{time.time()}.png')
-                image = path.join(getcwd(), 'plugins', 'resources', p)
-                with open(image, 'wb') as f:
+                image = path.join(dir_path, 'resources', p)
+                with open(image, 'wb+') as f:
                     plt.savefig(f,
-                                frameon=False,
+                                facecolor=(0, 0, 0, 30),
                                 transparent=True,
                                 format='png',
                                 bbox_inches='tight',

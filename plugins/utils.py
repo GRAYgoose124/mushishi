@@ -16,9 +16,6 @@
 import time
 import traceback
 import ast
-from os import path
-import json
-import re
 from discord import Embed, Colour, NotFound
 from discord.ext import commands
 from discord.ext.commands import Cog
@@ -52,14 +49,15 @@ class Utils(Cog):
         h, m = divmod(m, 60)
         d = h / 24
 
-        desc = (f'Owner: {app_info.owner.name}\n',
-                f'Uptime: {round(d)} days, {h} hours',
+        d = str(f'Owner: {app_info.owner.name}\n' +
+                f'Uptime: {round(d)} days, {h} hours\n' +
                 f'{round(m)} minutes, {round(s)} seconds\n')
+
         em = Embed(title="Stats",
-                   description=desc,
+                   description=d,
                    colour=Colour(0xBADA55),
                    type='rich').set_thumbnail(url=self.__bot_thumb)
-
+        print('stats')
         await ctx.send(embed=em)
 
     @commands.command()
@@ -141,7 +139,6 @@ class Utils(Cog):
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         self.status_timestamps[after.id] = (time.clock(), after.status)
-
 
 
 def setup(bot):

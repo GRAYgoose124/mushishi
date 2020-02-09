@@ -16,6 +16,7 @@
 import os
 from mushishi import Mushishi
 
+
 def main():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config_path = os.path.join(dir_path, 'config.json')

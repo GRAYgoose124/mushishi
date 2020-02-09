@@ -15,11 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from time import time
-from re import match
+import re
 from discord.ext import commands
 from discord import Embed
 import sqlalchemy as sa
-from sqlalchemy import Column, Integer, String, literal
+from sqlalchemy import Column, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, Text
@@ -29,23 +29,34 @@ from sqlalchemy.sql.expression import func
 from discord.ext.commands import Cog
 
 
-def re_fn(expr, item):
-    if item is None:
-        return
-    reg = re.compile(expr, re.I)
-    return reg.search(item) is not None
+# TODO: chain triggers, event triggers,
+# TODO: periodic/randomized triggers, limited self-trigger
+# TODO: morphological/lexical transformations, markov permutations
+# TODO: conv->factoid gen
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 db_path = os.path.join(dir_path, 'resources', 'data', 'facts.db')
-
-
 if os.name == 'nt':
     db_path = f'sqlite:///{db_path}'
 else:
     db_path = f'sqlite:////{db_path}'
 
 
+# create a regex function for sqlite and import it
+@sa.event.listens_for(sa.engine.Engine, 'connect')
+def sqlite_engine_connect(dbapi_conn, connection_record):
+    dbapi_conn.create_function('regexp', 2, _regexp)
+
+
+def _regexp(expr, item):
+    if item is None:
+        return
+    reg = re.compile(expr, re.I)
+    return reg.search(item) is not None  #
+
+
+# init db
 Base = declarative_base()
 
 
@@ -57,23 +68,10 @@ class Fact(Base):
 
 
 engine = create_engine(db_path)
-
-
-@sa.event.listens_for(engine, 'connect')
-def sqlite_engine_connect(dbapi_conn, connection_record):
-    dbapi_conn.create_function('regexp', 2, re_fn)
-
-
-Base.metadata.create_all(engine)
+Fact.metadata.create_all(engine)
 Base.metadata.bind = engine
 DBsession = sessionmaker(bind=engine)
-session = DBsession()
-
-
-# TODO: chain triggers, event triggers,
-# TODO: periodic/randomized triggers, limited self-trigger
-# TODO: morphological/lexical transformations, markov permutations
-# TODO: conv->factoid gen
+session = DBsession()  #
 
 
 class FactoidGen:
@@ -141,12 +139,14 @@ class Factoid(Cog):
             await ctx.send(embed=Embed(title=f'Fact {index}', description=d))
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot:
+    async def on_message(self, m):
+        if m.author.bot:
             return
 
-        factoid = session.query(Fact).filter(Fact.fact.op('REGEXP')(f'{message.content}'))\
-            .order_by(func.random()).first()
+        factoid = session.query(Fact)\
+            .filter(Fact.fact.op('REGEXP')(f'{m.content}a'))\
+            .order_by(func.random())\
+            .first()
 
         if factoid and factoid.response != '<NONE>':
             if factoid.id not in self.last_triggered:
@@ -154,9 +154,8 @@ class Factoid(Cog):
             if time() - self.last_triggered[factoid.id] < 450:
                 return
             else:
-                await message.channel.send(factoid.response)
+                await m.channel.send(factoid.response)
                 self.last_triggered[factoid.id] = time()
-
 
 
 def setup(bot):
@@ -164,8 +163,8 @@ def setup(bot):
 
 
 def teardown(bot):
-    print('\t| committing db.')
+    print('committing db.')
     session.commit()
-    print('\t| closing db.')
+    print('closing db.')
     session.close()
-    print('\t| done.')
+    print('done.')
