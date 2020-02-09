@@ -52,7 +52,7 @@ class Reaction(Cog):
     @commands.Cog.listener()
     async def on_command_error(self, command, error):
         # Delete invalid bot command
-        if type(error) == commands.CommandNotFound:
+        if type(error) == commands.CommandNotFound and not isinstance(command.channel, DMChannel):
             await command.message.delete()
 
     @commands.Cog.listener()

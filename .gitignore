@@ -11,4 +11,4 @@ scratch*
 __pycache__/*
 ../*
 .pylintrc
-testbed.ipynb
+testbed.*

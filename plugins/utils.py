@@ -34,13 +34,13 @@ class Utils(Cog):
 
         # Bot thumbnail
         rh = self.bot.config['resource_host']
-        bt = path.join('images', 'thumbnails', 'bot_stats.png')
+        bt = 'images/thumbnails/bot_stats.png'
         self.__bot_thumb = f'http://{rh}/{bt}'
 
-        st = path.join('images', 'thumbnails', 'source.png')
+        st = 'images/thumbnails/source.png'
         self.__src_thumb = f'http://{rh}/{st}'
 
-        pt = path.join('images', 'thumbnails', 'poll.png')
+        pt = 'images/thumbnails/poll.png'
         self.__pol_thumb = f'http://{rh}/{pt}'
 
     @commands.command()
@@ -57,7 +57,8 @@ class Utils(Cog):
                 f'{round(m)} minutes, {round(s)} seconds\n')
         em = Embed(title="Stats",
                    description=desc,
-                   colour=Colour(0xBADA55)).set_thumbnail(url=self.__bot_thumb)
+                   colour=Colour(0xBADA55),
+                   type='rich').set_thumbnail(url=self.__bot_thumb)
 
         await ctx.send(embed=em)
 
@@ -106,6 +107,11 @@ class Utils(Cog):
     #             self.interactive = False
     #     else:
     #         self.interactive = True
+
+    @commands.command()
+    @commands.is_owner()
+    async def savech(self, ctx):
+        self.bot.save_ch()
 
     @commands.command()
     @commands.is_owner()

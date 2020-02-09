@@ -72,8 +72,8 @@ class Mushishi(commands.Bot):
 
     async def on_message(self, m):
         botpfx = any([m.content.startswith(x) for x in self.config['prefixes']])
-        notbot = m.author.id != self.user.id
-        if not botpfx and notbot:
+        me = m.author.id == self.user.id
+        if not botpfx and not me and m.content != '':
             chan_name = None
             smc = re.sub('[-:. ]', '', str(m.created_at))
 
@@ -89,12 +89,14 @@ class Mushishi(commands.Bot):
 
         await self.process_commands(m)
 
-    def run(self):
-        self.load_extension('plugins.admin')
-
-        super().run(self.config['token'])
-
+    def save_ch(self):
         print("Core: Saving messages...")
         with open(self.ch_path, mode='w+') as f:
             json.dump(self.chat_history, f, sort_keys=True)
         print("Core: Done saving.")
+
+
+    def run(self):
+        self.load_extension('plugins.admin')
+        super().run(self.config['token'])
+        self.save_ch()

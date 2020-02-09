@@ -14,18 +14,27 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
-import time
-# import re
+from time import time
+from re import match
 from discord.ext import commands
 from discord import Embed
+import sqlalchemy as sa
 from sqlalchemy import Column, Integer, String, literal
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Text
 from sqlalchemy.sql.expression import func
 # import nltk
 # import json
 from discord.ext.commands import Cog
+
+
+def re_fn(expr, item):
+    if item is None:
+        return
+    reg = re.compile(expr, re.I)
+    return reg.search(item) is not None
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 db_path = os.path.join(dir_path, 'resources', 'data', 'facts.db')
@@ -43,12 +52,18 @@ Base = declarative_base()
 class Fact(Base):
     __tablename__ = 'facts'
     id = Column(Integer, primary_key=True)
-    fact = Column(String(255), nullable=False)
-
-    response = Column(String(255), nullable=False)
+    fact = Column(Text, nullable=False)
+    response = Column(Text, nullable=False)
 
 
 engine = create_engine(db_path)
+
+
+@sa.event.listens_for(engine, 'connect')
+def sqlite_engine_connect(dbapi_conn, connection_record):
+    dbapi_conn.create_function('regexp', 2, re_fn)
+
+
 Base.metadata.create_all(engine)
 Base.metadata.bind = engine
 DBsession = sessionmaker(bind=engine)
@@ -130,19 +145,18 @@ class Factoid(Cog):
         if message.author.bot:
             return
 
-        factoid = session.query(Fact).filter(
-            literal(message.content).contains(Fact.fact))\
+        factoid = session.query(Fact).filter(Fact.fact.op('REGEXP')(f'{message.content}'))\
             .order_by(func.random()).first()
 
         if factoid and factoid.response != '<NONE>':
-            try:
-                if time.clock().seconds() - self.last_triggered[factoid.id] < 450:
-                    return
-            except KeyError:
-                pass
-            finally:
+            if factoid.id not in self.last_triggered:
+                self.last_triggered[factoid.id] = time() - 450
+            if time() - self.last_triggered[factoid.id] < 450:
+                return
+            else:
                 await message.channel.send(factoid.response)
-                self.last_triggered[factoid.id] = time.clock().seconds()
+                self.last_triggered[factoid.id] = time()
+
 
 
 def setup(bot):

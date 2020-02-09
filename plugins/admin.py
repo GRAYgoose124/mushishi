@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from discord.ext import commands
-from discord.ext.commands import Cog, ExtensionAlreadyLoaded, ExtensionError, ExtensionNotFound
+from discord.ext.commands import Cog, ExtensionAlreadyLoaded, ExtensionError, ExtensionNotFound, ExtensionFailed
 import traceback
 
 
@@ -45,18 +45,19 @@ class Admin(Cog):
         """ <name> - load a pod """
         try:
             await self.rm(ctx, plugin)
-
-            try:
-                self.bot.load_extension(f'plugins.{plugin}')
-                self.loaded_plugins.append(plugin)
-            except ExtensionError as e:
-                traceback.print_exception(e)
-            except ExtensionAlreadyLoaded:
-                print("Pod reload failed. (Not unloaded)")
-            except ExtensionNotFound:
-                await ctx.send("No such pod exists.")
-
+            self.bot.load_extension(f'plugins.{plugin}')
+            self.loaded_plugins.append(plugin)
+            print(f'{plugin} loaded.')
             await ctx.message.add_reaction(emoji='✅')
+        except ExtensionError as e:
+            traceback.print_tb(e.__traceback__)
+        except ExtensionFailed as e:
+            print(e)
+            traceback.print_tb(e.__traceback__)
+        except ExtensionAlreadyLoaded:
+            print("Pod reload failed. (Not unloaded)")
+        except ExtensionNotFound:
+            await ctx.send("No such pod exists.")
         except Exception as e:
             if '✅' in ctx.message.reactions:
                 await ctx.message.remove_reaction(emoji='✅')
@@ -71,6 +72,7 @@ class Admin(Cog):
             await ctx.message.add_reaction(emoji='🚫')
         elif plugin in self.loaded_plugins:
             self.bot.unload_extension(f'plugins.{plugin}')
+            print(f'{plugin} unloaded.')
 
             i = self.loaded_plugins.index(plugin)
             del(self.loaded_plugins[i])

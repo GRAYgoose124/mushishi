@@ -19,8 +19,8 @@ import numpy as np
 from numpy import sin, cos, tan, pi, e, log, log2, sqrt, power
 from matplotlib import pyplot as plt
 
-# import scipy
-# import scipy.integrate as integrate
+import scipy
+import scipy.integrate as integrate
 from discord import Embed
 from discord.ext import commands
 
