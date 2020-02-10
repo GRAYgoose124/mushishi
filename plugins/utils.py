@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import time
-import traceback
-import ast
 from discord import Embed, Colour, NotFound
 from discord.ext import commands
 from discord.ext.commands import Cog
@@ -24,6 +22,7 @@ from discord.ext.commands import Cog
 class Utils(Cog):
     def __init__(self, bot):
         self.bot = bot
+
         self.last_absence = {'checked': 0, 'average': 0}
         self.last_command = None
         self.uptime = time.clock()
@@ -57,7 +56,7 @@ class Utils(Cog):
                    description=d,
                    colour=Colour(0xBADA55),
                    type='rich').set_thumbnail(url=self.__bot_thumb)
-        print('stats')
+
         await ctx.send(embed=em)
 
     @commands.command()
@@ -110,31 +109,6 @@ class Utils(Cog):
     @commands.is_owner()
     async def savech(self, ctx):
         self.bot.save_ch()
-
-    @commands.command()
-    @commands.is_owner()
-    async def evil(self, ctx, *code: str):
-        """ - eval python code"""
-        try:
-            code = ' '.join(code)
-
-            for node in ast.walk(ast.parse(code)):
-                isexpr = type(node) == ast.Expr
-                iscall = type(node.value) == ast.Call
-                iseval = node.value.func.id == 'eval'
-                if type(node) == ast.Import:
-                    await ctx.send(f'No importing! Only evil!')
-                    return
-                elif isexpr and iscall and iseval:
-                    await ctx.send(f'No eval! Only evil!')
-                    return
-
-            results = eval(code)
-            await ctx.send(f'{results}')
-        except Exception as e:
-            traceback.print_exc(e)
-            await ctx.send(f'`{e.__class__.__name__}{e}\n'
-                           f'{traceback.format_exc(e)}`')
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):

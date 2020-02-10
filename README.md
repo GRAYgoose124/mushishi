@@ -1,4 +1,4 @@
-# About Mushishi ``v0.0.8``
+# About Mushishi ``v0.0.9``
 Mushishi is a plugin-based bot focused on mimicking "human intelligence" with
 features such as Factoids, Markov chains, and basic NLP.
 
@@ -45,4 +45,5 @@ Clone the source to a local directory:
 
 # Running
 cd to parent directory of mushishi then run:
+
     python mushishi

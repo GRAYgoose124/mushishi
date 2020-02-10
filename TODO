@@ -1,0 +1,14 @@
+----
+TODO: fix url/path consistency
+TODO: convert to logging module
+TODO: ast.parse plot equation and use dictswitchcalling
+TODO: use get_cogs and remove loaded plugins for admin plugin system
+---
+basic discordmusic and polls
+TODO: discordmusic
+TODO: delete previous bot message on cmd replay
+TODO: reaction Poll
+---
+TODO: class/func docstrings, cmd docstrings, readability refactoring
+TODO: pythonic refactoring
+TODO: programmatic cmd syntax

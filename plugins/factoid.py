@@ -144,7 +144,7 @@ class Factoid(Cog):
             return
 
         factoid = session.query(Fact)\
-            .filter(Fact.fact.op('REGEXP')(f'{m.content}a'))\
+            .filter(Fact.fact.op('REGEXP')(f'{m.content}'))\
             .order_by(func.random())\
             .first()
 

@@ -5,10 +5,12 @@
 .idea/*
 plugins/resources/images/*
 plugins/resources/data/*
+plugins/resources/videos/*
 changelog
 scratch*
 .vscode/*
 __pycache__/*
-../*
+../*g
 .pylintrc
-testbed.*
+test*.*
+music.py

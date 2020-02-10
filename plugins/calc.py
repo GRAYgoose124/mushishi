@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import random
-import time
+from time import time
 import numpy as np
 from matplotlib import pyplot as plt
 # import scipy
@@ -123,16 +123,15 @@ class Plot(Cog):
                 return fig
             else:
                 dir_path = path.dirname(path.realpath(__file__))
-                p = path.join('images', 'tmp_plots', f'plot{time.time()}.png')
+                p = path.join(f'images/tmp_plots/plot{time()}.png')
                 image = path.join(dir_path, 'resources', p)
                 with open(image, 'wb+') as f:
                     plt.savefig(f,
-                                facecolor=(0, 0, 0, 30),
+                                facecolor=(0, 0, 0, .30),
                                 transparent=True,
                                 format='png',
                                 bbox_inches='tight',
                                 pad_inches=0.0)
-
                 return p
         except IOError as e:
             print(e)
@@ -140,26 +139,18 @@ class Plot(Cog):
     # Todo: Cache images
     @commands.command()
     @commands.is_owner()
-    async def plot(self, ctx, *equation_in: str):
+    async def plot(self, ctx, *python_in: str):
         """[equation] - plots an equation if valid."""
-        equation_in = ' '.join(equation_in)
+        python_in = ' '.join(python_in)
 
-        equations = equation_in.split(';')
-
-        p = ''
         valid_eq = None
-        for equation in equations:
-            try:
-                valid_eq = eval(f'lambda x: {equation}')
-                p = self._plot_equation(valid_eq, image=True)
-            except Exception as e:
-                print(e)
+        p = self._plot_equation(valid_eq, image=True)
 
         rh = self.bot.config['resource_host']
-        url = f'http://{rh}\\{p}'.replace('\\', '/')
+        url = f'http://{rh}/{p}'
 
         await ctx.send(embed=Embed(colour=0xBADA55,
-                                   description=equation_in).set_image(url=url))
+                                   description=valid_eq).set_image(url=url))
 
 
 def setup(bot):

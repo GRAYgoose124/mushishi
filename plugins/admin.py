@@ -28,7 +28,6 @@ class Admin(Cog):
     """
     def __init__(self, bot):
         self.bot = bot
-        self.loaded_plugins = []
         self.interactive = False
 
     async def on_command(self, command):
@@ -50,9 +49,10 @@ class Admin(Cog):
         try:
             await self.rm(ctx, plugin)
             self.bot.load_extension(f'plugins.{plugin}')
-            self.loaded_plugins.append(plugin)
             print(f'{plugin} loaded.')
+
             await ctx.message.add_reaction(emoji='✅')
+
         except Exception as e:
             if isinstance(e, ExtensionError):
                 traceback.print_tb(e.__traceback__)
@@ -73,12 +73,9 @@ class Admin(Cog):
         """ <name> - unload a pod """
         if plugin == "admin":
             await ctx.message.add_reaction(emoji='🚫')
-        elif plugin in self.loaded_plugins:
+        elif plugin in [x.lower() for x in self.bot.cogs.keys()]:
             self.bot.unload_extension(f'plugins.{plugin}')
             print(f'{plugin} unloaded.')
-
-            i = self.loaded_plugins.index(plugin)
-            del(self.loaded_plugins[i])
 
     @p.command()
     async def ls(self, ctx):
@@ -86,12 +83,14 @@ class Admin(Cog):
         ps = ""
         for plugin in self.bot.config['plugins']:
             plugin = plugin.strip("*")
-            if plugin in self.loaded_plugins:
+            if plugin in [x.lower() for x in self.bot.cogs.keys()]:
                 ps += f'(✓) {plugin}\n'
             else:
                 ps += f'( ) {plugin}\n'
+        print('all cogs: ', self.bot.cogs)
 
-        await ctx.send(f'My plugins are:\n`{ps}`')
+        cogs = list(self.bot.cogs.keys())
+        await ctx.send(f'My plugins are:\n{ps}\ncogs: {cogs}')
 
     @commands.command()
     @commands.is_owner()
@@ -102,14 +101,12 @@ class Admin(Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print('---Loading plugins---')
-        self.loaded_plugins = []
         for plugin in self.bot.config['plugins']:
             autoload = plugin[0] == '*'
             if autoload:
                 plugin = plugin[1:]
                 try:
                     self.bot.load_extension(f'plugins.{plugin}')
-                    self.loaded_plugins.append(plugin)
                     print(f'Loaded {plugin}...')
                 except Exception as e:
                     print(e)

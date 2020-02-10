@@ -1,10 +1,12 @@
 import http.server
 import socketserver
 
-if __name__ == '__main__':
-    PORT = 124
 
+def fserve():
     Handler = http.server.SimpleHTTPRequestHandler
-    httpd = socketserver.TCPServer(("", PORT), Handler)
-
+    httpd = socketserver.TCPServer(("", 124), Handler)
     httpd.serve_forever()
+
+
+if __name__ == '__main__':
+    fserve()
