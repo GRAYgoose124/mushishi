@@ -63,7 +63,8 @@ class Mushishi(commands.Bot):
                            'plugins': ["*admin", "*utils", "*reaction"],
                            'prefixes': ["m.", "mu ", "\N{BUG} "],
                            'source_url': src_url,
-                           'resource_host': ""}
+                           'resource_host': ""
+                           }
 
             with open(config_path, 'w') as f:
                 json.dump(self.config, f)

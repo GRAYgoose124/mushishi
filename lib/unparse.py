@@ -1,5 +1,5 @@
 # modified from unparse from cpython
-from ast import NodeVisitor, Name, Constant, Module, Tuple
+from ast import *
 import sys
 from contextlib import contextmanager, nullcontext
 from _ast import *

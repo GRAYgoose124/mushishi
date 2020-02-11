@@ -11,6 +11,13 @@ class Jukebox(Cog):
         self.vc = None
         self.currently_playing = None
 
+        vd = os.path.join(self.bot.resource_path, 'videos')
+        if not os.path.isdir(vd):
+            os.mkdir(vd)
+        if not os.path.isfile(self.bot.ch_path):
+            with open(self.ch_path, mode='w+'):
+                pass
+
     def get_fn(self, d):
         if d['status'] == 'finished':
             print('Done downloading, now converting ...')
@@ -28,8 +35,7 @@ class Jukebox(Cog):
             print(e)
 
         if self.vc is not None:
-            fp = os.path.join(f'{os.path.dirname(os.path.realpath(__file__))}',
-                              'plugins', 'resources',
+            fp = os.path.join(self.bot.resource_path,
                               'videos', '%(title)s.%(ext)s')
 
             ydl_opts = {

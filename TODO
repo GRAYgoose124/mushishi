@@ -12,3 +12,4 @@ TODO: reaction Poll
 TODO: class/func docstrings, cmd docstrings, readability refactoring
 TODO: pythonic refactoring
 TODO: programmatic cmd syntax
+TODO: ??move fileserver to utils allowing to start from bot
