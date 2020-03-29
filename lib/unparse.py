@@ -81,7 +81,8 @@ class _Unparser(NodeVisitor):
             if hasattr(node, 'value'):
                 if node.value is None:
                     return node
-            super().visit(node)
+            if hasattr(node, '_fields'):
+                super().visit(node)
 
     def visit(self, node):
         """Outputs a source code string that, if converted back to an ast
@@ -578,10 +579,10 @@ class _Unparser(NodeVisitor):
     def visit_Subscript(self, node):
         if len(node.__dict__) == 0:
             return ''
-
         self.traverse(node.value)
-        with self.delimit("[", "]"):
-            self.traverse(node.slice)
+        if hasattr(node, 'slice'):
+            with self.delimit("[", "]"):
+                self.traverse(node.slice)
 
     def visit_Starred(self, node):
         self.write("*")

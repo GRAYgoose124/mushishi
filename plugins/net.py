@@ -32,7 +32,7 @@ class Network:
         self.hidden_layers = np.zeros((hidden_size[0], hidden_size[1]), float)
         self.output_layer = np.zeros(output_width)
 
-        self.ih_weights = np.ones((input_width, hidden_size[0]))
+        self.ih_weights = np.ones((hidden_size[0], input_width))
         self.hidden_weights = np.random.random_sample((hidden_size[0],
                                                        hidden_size[0],
                                                        hidden_size[1]))
@@ -64,10 +64,6 @@ class Network:
     @staticmethod
     @np.vectorize
     def derrtodinput(target, output):
-        # obatined by multiplying the derivative of sigmoid
-        # to the derivative of error because we are taking the
-        # derivative to via the chain rule. we use this because
-        # we want to calculate the error of each neuron from the output error
         return 0.5 * (target - output) * output * (1 - output)
 
     def feedf(self, input_data):
@@ -105,12 +101,12 @@ class Network:
                 self.backp(expected_output, learning_rate)
 
     def __repr__(self):
-        s = ('Input Layer:\n{self.input_layer}\n',
-             'Input-Hidden Weights:\n{self.ih_weights}\n',
-             'Hidden Layers:\n{self.hidden_layers}\n',
-             'Hidden Weights:\n{self.hidden_weights}\n',
-             'HiddenN-Output Weights:\n{self.ho_weights}\n',
-             'Output Layer:\n{self.output_layer}\n')
+        s = (f'Input Layer:\n{self.input_layer}\n'
+             f'Input-Hidden Weights:\n{self.ih_weights}\n'
+             f'Hidden Layers:\n{self.hidden_layers}\n'
+             f'Hidden Weights:\n{self.hidden_weights}\n'
+             f'HiddenN-Output Weights:\n{self.ho_weights}\n'
+             f'Output Layer:\n{self.output_layer}\n')
         return s
 
 

@@ -11,9 +11,13 @@ import json
 from pathlib import Path
 # import numpy as np
 # import scipy
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 
+# TODO: create a db graph of words ideas colloqialisms etc linked
+# TODO: numpy arrays
+# TODO: graph parser/traverser
+# TODO graphvisualize
 # category lists
 # structural color texture
 
@@ -41,7 +45,7 @@ class CategoryWordGraph:
                 return True
         return None
 
-    # What is obj?
+    # What is the obj?
     def is_a(self, object):
         if object in self.objects:
             return self.objects[object][0]
@@ -55,7 +59,7 @@ class CategoryWordGraph:
         except KeyError:
             pass
 
-    # What are the features of the parent objects? It inherits these by nature.
+    # What are the features of the parent objects?
     def super_features(self, object, depth=None):
         parent = object
         if depth is not None:
@@ -82,18 +86,14 @@ class CategoryWordGraph:
     def shared_obj_features(self, obj1, obj2):
         return list(set(self.objects[obj1][1]) & set(self.objects[obj2][1]))
 
+    # utilities
     def interactive_add_words(self):
         object = None
 
-        while object != "!!":
-            object, category = input("Enter a word and category: ").split(' ')
-            if object == "!!":
-                continue
-            associations = input("Enter associated words: ")
-            if object in self.objects:
-                self.objects[object] += (category, associations.split(' '))
-            else:
-                self.objects[object] = (category, associations.split(' '))
+        while wpt != "!q":
+           #word phrase thought loop wpt | associations <-> , ; [,] : [:] ^
+           # associations lead to different link types
+
 
         with open(self.objectlist, "w") as f:
             json.dump(self.objects, f)
@@ -110,6 +110,14 @@ class CategoryWordGraph:
 
         with open(self.objectlist, "r") as f:
             self.objects = json.load(f)
+
+    def save_wordlist(self, jsonlist=None):
+        if jsonlist is not None:
+            self.objectlist = jsonlist
+
+        with open(self.objectlist, "w+") as f:
+            json.dump(self.objects, f)
+
 
     def __repr__(self):
         return f'{self.objects}'
@@ -164,16 +172,12 @@ def setup(bot):
 if __name__ == '__main__':
     # Interactive writing loop
     parent_dir = Path(__file__).resolve().parent
-    cwg = CategoryWordGraph(Path(parent_dir, "resources/data/words.json"))
-    cwg.load_wordlist()
-    # cwg.interactive_add_words()
+    cwg = CategoryWordGraph(Path(parent_dir, "resources/data/words1.json"))
+    #cwg.load_wordlist()
+    cwg.interactive_add_words()
 
     for object in cwg.objects:
         print(f"A {object} is a {cwg.is_a(object)}")
         print(f"It has these features {cwg.features(object)}")
 
-    print("----------------")
-    print(cwg.is_type_of("dog", "lifeform"))
-    print(cwg.cat_objs("lifeform"))
-    print(cwg.super_features("dog", depth=3), cwg.features("dog"))
-    print(cwg.shared_obj_features("dog", "cat"))
+    cwg.save_wordlist()
