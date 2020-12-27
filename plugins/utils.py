@@ -25,7 +25,7 @@ class Utils(Cog):
 
         self.last_absence = {'checked': 0, 'average': 0}
         self.last_command = None
-        self.uptime = time.clock()
+        self.uptime = time.perf_counter()
         self.status_timestamps = {}
 
         # Bot thumbnail
@@ -43,7 +43,7 @@ class Utils(Cog):
     async def stats(self, ctx):
         app_info = await self.bot.application_info()
 
-        t = (time.clock() - self.uptime)
+        t = (time.perf_counter() - self.uptime)
         m, s = divmod(t, 60)
         h, m = divmod(m, 60)
         d = h / 24
@@ -112,8 +112,7 @@ class Utils(Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        self.status_timestamps[after.id] = (time.clock(), after.status)
-
+        self.status_timestamps[after.id] = (time.perf_counter(), after.status)
 
 def setup(bot):
     bot.add_cog(Utils(bot))

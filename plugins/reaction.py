@@ -76,8 +76,7 @@ class Reaction(Cog):
             elif r.emoji == "🗜" and user.id == r.message.author.id:
                 try:
                     for r in r.message.reactions:
-                        if r.me:
-                            await r.message.remove_reaction(r, self.bot.user)
+                        await r.message.clear_reaction(r)
                 finally:
                     await self.bot.process_commands(r.message)
 

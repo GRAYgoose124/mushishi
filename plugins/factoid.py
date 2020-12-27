@@ -52,8 +52,11 @@ def sqlite_engine_connect(dbapi_conn, connection_record):
 def _regexp(expr, item):
     if item is None:
         return
-    reg = re.compile(expr, re.I)
-    return reg.search(item) is not None  #
+    try:
+        reg = re.compile(expr, re.I)
+        return reg.search(item) is not None
+    except re.error:
+        pass
 
 
 # init db
@@ -143,6 +146,8 @@ class Factoid(Cog):
         if m.author.bot:
             return
 
+
+
         factoid = session.query(Fact)\
             .filter(Fact.fact.op('REGEXP')(f'{m.content}'))\
             .order_by(func.random())\
@@ -163,8 +168,8 @@ def setup(bot):
 
 
 def teardown(bot):
-    print('committing db.')
+    print('Factoid: Committing db.')
     session.commit()
-    print('closing db.')
+    print('Factoid: Closing db.')
     session.close()
-    print('done.')
+    print('Factoid: Done.')

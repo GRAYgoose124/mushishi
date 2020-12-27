@@ -90,7 +90,11 @@ class Mushishi(commands.Bot):
 
         await self.process_commands(m)
 
-    def save_ch(self):
+
+    async def on_ready(self):
+        print('Logged in as {0} ({0.id})'.format(self.user))
+
+    def save_chat(self):
         print("Core: Saving messages...")
         with open(self.ch_path, mode='w+') as f:
             json.dump(self.chat_history, f, sort_keys=True)
@@ -98,5 +102,10 @@ class Mushishi(commands.Bot):
 
     def run(self):
         self.load_extension('plugins.admin')
+
         super().run(self.config['token'])
-        self.save_ch()
+        # loop = asyncio.get_event_loop()
+        # loop.run_until_complete(self.start(self.config['token'], bot=True))
+
+        self.save_chat()
+

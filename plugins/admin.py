@@ -87,16 +87,9 @@ class Admin(Cog):
                 ps += f'(✓) {plugin}\n'
             else:
                 ps += f'( ) {plugin}\n'
-        print('all cogs: ', self.bot.cogs)
 
         cogs = list(self.bot.cogs.keys())
         await ctx.send(f'My plugins are:\n{ps}\ncogs: {cogs}')
-
-    @commands.command()
-    @commands.is_owner()
-    async def quit(self, ctx):
-        """ shutdown mushishi """
-        await ctx.bot.logout()
 
     @commands.Cog.listener()
     async def on_ready(self):

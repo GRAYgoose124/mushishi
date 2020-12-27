@@ -90,7 +90,7 @@ class CategoryWordGraph:
     def interactive_add_words(self):
         object = None
 
-        while wpt != "!q":
+        # while wpt != "!q":
            #word phrase thought loop wpt | associations <-> , ; [,] : [:] ^
            # associations lead to different link types
 

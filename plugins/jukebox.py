@@ -18,10 +18,7 @@ class Jukebox(Cog):
             with open(self.ch_path, mode='w+'):
                 pass
 
-    def get_fn(self, d):
-        if d['status'] == 'finished':
-            print('Done downloading, now converting ...')
-            self.currently_playing = d['filename']
+
 
     @commands.command(pass_context=True)
     async def yt(self, ctx, *search):
@@ -49,8 +46,8 @@ class Jukebox(Cog):
                 'noplaylist': True,
                 'nocheckcertificate': True,
                 'ignoreerrors': False,
-                'logtostderr': False,
-                'quiet': True,
+                'logtostderr': True,
+                'quiet': False,
                 'no_warnings': True,
                 'source_address': '0.0.0.0'
             }
@@ -65,10 +62,12 @@ class Jukebox(Cog):
             except Exception as e:
                 print(e)
 
-    def __unload(self):
-        self.vc.disconnect()
-        self.vc = None
+
 
 
 def setup(bot):
     bot.add_cog(Jukebox(bot))
+
+def teardown(bot):
+    bot.vc.disconnect()
+    bot.vc = None
