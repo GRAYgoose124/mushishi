@@ -3,6 +3,7 @@ from os import path
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 from discord.utils import get
+from curio import aopen
 
 
 class Rolemaster(Cog):
@@ -36,9 +37,6 @@ class Rolemaster(Cog):
         else:
             self.role_data[m.author.name]['xp'] += len(set(m.content))
             if self.role_data[m.author.name]['xp'] >= self.role_data[m.author.name]['xp_needed']:
-
-
-
                 if not m.author.bot and not m.author.server_permissions.administrator:
                     await self.bot.remove_roles(m.author, m.server.roles[self.role_data[m.author.name]['level']] - 1)
 
@@ -61,9 +59,7 @@ def setup(bot):
 
 
 def teardown(bot):
-    print("got here")
-    # with open(bot.role_file, 'w') as f:
-    #     print("RM: Saving role stats.")
-    #     json.dump(bot.role_data, f)
-    #     print("RM: Done.")
-    print("gotem")
+    with open(bot.role_file, 'w') as f:
+        print("RM: Saving role stats.")
+        json.dump(bot.role_data, f)
+        print("RM: Done.")

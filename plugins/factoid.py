@@ -153,7 +153,7 @@ class Factoid(Cog):
             .order_by(func.random())\
             .first()
 
-        if factoid and factoid.response != '<NONE>':
+        if factoid is not None and factoid.response != '<NONE>':
             if factoid.id not in self.last_triggered:
                 self.last_triggered[factoid.id] = time() - 450
             if time() - self.last_triggered[factoid.id] < 450:

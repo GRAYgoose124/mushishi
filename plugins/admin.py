@@ -79,7 +79,7 @@ class Admin(Cog):
 
     @p.command()
     async def ls(self, ctx):
-        """ - list all available pods. *=active"""
+        """ - list all available pods."""
         ps = ""
         for plugin in self.bot.config['plugins']:
             plugin = plugin.strip("*")
@@ -90,6 +90,12 @@ class Admin(Cog):
 
         cogs = list(self.bot.cogs.keys())
         await ctx.send(f'My plugins are:\n{ps}\ncogs: {cogs}')
+
+    @commands.command()
+    @commands.is_owner()
+    async def quit(self, ctx):
+        """ shutdown mushishi """
+        await ctx.bot.logout()
 
     @commands.Cog.listener()
     async def on_ready(self):

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from discord.ext import commands
-from discord.errors import NotFound
+from discord.errors import NotFound, Forbidden
 from discord.ext.commands import Cog
 from discord import DMChannel
 from traceback import print_exc
@@ -59,26 +59,30 @@ class Reaction(Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, r, user):
-        if user.id != self.bot.user.id:
-            # Erase message
-            if r.emoji == "♻":
-                try:
-                    if isinstance(r.message.channel, DMChannel):
-                        return
+        try:
+            if user.id != self.bot.user.id:
+                # Erase message
+                if r.emoji == "♻":
+                    try:
+                        if isinstance(r.message.channel, DMChannel):
+                            return
 
-                    rperc = r.count > len(r.message.channel.members) / 3
-                    if rperc or user.id == self.bot.owner_id:
+                        rperc = r.count > len(r.message.channel.members) / 3
+                        if rperc or user.id == self.bot.owner_id:
+                            await r.message.delete()
+                    except AttributeError:
                         await r.message.delete()
-                except AttributeError:
-                    await r.message.delete()
 
-            # Rerun command
-            elif r.emoji == "🗜" and user.id == r.message.author.id:
-                try:
-                    for r in r.message.reactions:
-                        await r.message.clear_reaction(r)
-                finally:
-                    await self.bot.process_commands(r.message)
+                # Rerun command
+                elif r.emoji == "🗜" and user.id == r.message.author.id:
+                    try:
+                        for r in r.message.reactions:
+                            await r.message.clear_reaction(r)
+                    finally:
+                        await self.bot.process_commands(r.message)
+        except Forbidden as e:
+            pass
+            # cannot remove DM user reacts maybe remove instead of clear?
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):

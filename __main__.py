@@ -45,7 +45,7 @@ def main():
 
         # if rerun:
         bot.run()
-            # rerun = False
+        #     rerun = False
         print("---Shutdown complete---\nGoodbye.")
 
 

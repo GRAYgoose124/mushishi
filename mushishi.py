@@ -75,7 +75,6 @@ class Mushishi(commands.Bot):
         bpfx = any([m.content.startswith(x) for x in self.config['prefixes']])
         me = m.author.id == self.user.id
         if not bpfx and not me and m.content != '':
-            chan_name = None
             smc = re.sub('[-:. ]', '', str(m.created_at))
 
             if not hasattr(m.channel, 'name'):
