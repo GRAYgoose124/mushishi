@@ -50,9 +50,10 @@ class Admin(Cog):
             await self.rm(ctx, plugin)
             self.bot.load_extension(f'plugins.{plugin}')
             print(f'{plugin} loaded.')
-
+            
+            if '🔴' in ctx.message.reactions:
+                await ctx.message.remove_reaction(emoji='🔴')
             await ctx.message.add_reaction(emoji='✅')
-
         except Exception as e:
             if isinstance(e, ExtensionError):
                 traceback.print_tb(e.__traceback__)

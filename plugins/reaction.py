@@ -20,6 +20,9 @@ from discord import DMChannel
 from traceback import print_exc
 
 
+# TODO: Remove error reaction on success.
+
+
 class Reaction(Cog):
     """Events related to reacting to messages
 """

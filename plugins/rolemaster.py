@@ -1,9 +1,8 @@
 import json
 from os import path
-from discord.ext import commands, tasks
+from discord.ext import commands
 from discord.ext.commands import Cog
 from discord.utils import get
-from curio import aopen
 
 
 class Rolemaster(Cog):
@@ -29,6 +28,8 @@ class Rolemaster(Cog):
 
     @commands.Cog.listener()
     async def on_message(self, m):
+        if m.author.bot: return
+
         if m.author.name not in self.role_data:
             self.role_data[m.author.name] = {}
             self.role_data[m.author.name]['xp'] = 0
@@ -37,7 +38,7 @@ class Rolemaster(Cog):
         else:
             self.role_data[m.author.name]['xp'] += len(set(m.content))
             if self.role_data[m.author.name]['xp'] >= self.role_data[m.author.name]['xp_needed']:
-                if not m.author.bot and not m.author.server_permissions.administrator:
+                if not m.author.bot: #todo not owner
                     await self.bot.remove_roles(m.author, m.server.roles[self.role_data[m.author.name]['level']] - 1)
 
                 self.role_data[m.author.name]['level'] += 1
