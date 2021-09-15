@@ -84,7 +84,7 @@ class Reaction(Cog):
                     finally:
                         await self.bot.process_commands(r.message)
         except Forbidden as e:
-            pass
+            print(e)
             # cannot remove DM user reacts maybe remove instead of clear?
 
     @commands.Cog.listener()

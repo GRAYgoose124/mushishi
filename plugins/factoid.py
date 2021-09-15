@@ -25,7 +25,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, Text
 from sqlalchemy.sql.expression import func
 # import nltk
-# import json
 from discord.ext.commands import Cog
 
 
@@ -102,7 +101,7 @@ class Factoid(Cog):
     @fact.command()
     async def add(self, ctx, *fact: str):
         """ <fact> <action> <response> - Create a new factoid."""
-        fact = ' '.join(fact).split(f' >> ')
+        fact = ' '.join(fact).split(' >> ')
         if len(fact) == 2:
             session.add(Fact(fact=fact[0], response=fact[1]))
             session.commit()
@@ -145,8 +144,6 @@ class Factoid(Cog):
     async def on_message(self, m):
         if m.author.bot:
             return
-
-
 
         factoid = session.query(Fact)\
             .filter(Fact.fact.op('REGEXP')(f'{m.content}'))\

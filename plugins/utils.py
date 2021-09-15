@@ -114,5 +114,6 @@ class Utils(Cog):
     async def on_member_update(self, before, after):
         self.status_timestamps[after.id] = (time.perf_counter(), after.status)
 
+
 def setup(bot):
     bot.add_cog(Utils(bot))

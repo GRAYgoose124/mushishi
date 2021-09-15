@@ -76,6 +76,7 @@ class Admin(Cog):
             await ctx.message.add_reaction(emoji='🚫')
         elif plugin in [x.lower() for x in self.bot.cogs.keys()]:
             self.bot.unload_extension(f'plugins.{plugin}')
+            # delete pycache?
             print(f'{plugin} unloaded.')
 
     @p.command()

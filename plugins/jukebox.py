@@ -1,6 +1,6 @@
 from discord.ext.commands import Cog
 from discord.ext import commands
-from discord.player import FFmpegOpusAudio
+import discord
 from youtube_dl import YoutubeDL
 import os
 
@@ -27,7 +27,8 @@ class Jukebox(Cog):
         search = (' ').join(search)
 
         try:
-            self.vc = await voice_channel.connect()
+            if self.vc is not None or not self.vc == voice_channel:
+                self.vc = await voice_channel.connect()
         except Exception as e:
             print(e)
 
@@ -39,7 +40,7 @@ class Jukebox(Cog):
                 'format': 'bestaudio/best',
                 'outtmpl': fp,
                 'noplaylist': True,
-                'progress_hooks': [self.get_fn],
+                'progress_hooks': [],
                 'default_search': "ytsearch",
                 'max_downloads': 1,
                 'restrictfilenames': True,
@@ -56,11 +57,14 @@ class Jukebox(Cog):
                 ydl.download([search])
 
             try:
-                aus = FFmpegOpusAudio(self.currently_playing)
-                player = self.vc
-                player.play(aus)
+                source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(fp))
+                ctx.voice_client.play(
+                    source, after=lambda e: print("Player error: %s" % e) if e else None
+                )
             except Exception as e:
                 print(e)
+
+            await ctx.send(f"Now playing: {search}")
 
 
 

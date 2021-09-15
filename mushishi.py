@@ -89,7 +89,6 @@ class Mushishi(commands.Bot):
 
         await self.process_commands(m)
 
-
     async def on_ready(self):
         print('Logged in as {0} ({0.id})'.format(self.user))
 
@@ -107,4 +106,3 @@ class Mushishi(commands.Bot):
         # loop.run_until_complete(self.start(self.config['token'], bot=True))
 
         self.save_chat()
-

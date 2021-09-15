@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 # category lists
 # structural color texture
 
+
 class CategoryWordGraph:
     def __init__(self, objectlist):
         self.objectlist = objectlist
