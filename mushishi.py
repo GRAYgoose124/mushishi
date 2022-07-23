@@ -60,7 +60,7 @@ class Mushishi(commands.Bot):
         else:
             src_url = 'https://github.com/GRAYgoose124/mushishi'
             self.config = {"token": "<TOKEN>",
-                           'plugins': ["*admin", "*utils", "*reaction"],
+                           'default_plugins': ["utils", "reaction"],
                            'prefixes': ["m.", "mu ", "\N{BUG} "],
                            'source_url': src_url,
                            'resource_host': ""

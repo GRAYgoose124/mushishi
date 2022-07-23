@@ -20,15 +20,17 @@ from discord.ext.commands import (Cog,
                                   ExtensionNotFound,
                                   ExtensionFailed)
 import traceback
-
+import os
 
 class Admin(Cog):
-    """Commands related to administration functionality.
+    """Commands related to plugin administration functionality.
     Many require owner/admin permissions.
     """
     def __init__(self, bot):
         self.bot = bot
         self.interactive = False
+
+        self._get_all_plugins()
 
     async def on_command(self, command):
         real_prefix = command.message.content[:2]
@@ -47,9 +49,12 @@ class Admin(Cog):
     async def ld(self, ctx, plugin: str):
         """ <name> - load a pod """
         try:
+            if plugin in self.bot.config['all_plugins']:
+                raise ValueError
+
             await self.rm(ctx, plugin)
-            self.bot.load_extension(f'plugins.{plugin}')
-            print(f'{plugin} loaded.')
+            self.bot.load_extension(f'plugins{plugin}')
+            print(f"{plugin} loaded.")
             
             if '🔴' in ctx.message.reactions:
                 await ctx.message.remove_reaction(emoji='🔴')
@@ -61,7 +66,7 @@ class Admin(Cog):
                 print(e.args)
             if isinstance(e, ExtensionAlreadyLoaded):
                 print("Pod reload failed. (Not unloaded)")
-            if isinstance(e, ExtensionNotFound):
+            if isinstance(e, ExtensionNotFound) or isinstance(e, ValueError):
                 await ctx.send("No such pod exists.")
 
             if '✅' in ctx.message.reactions:
@@ -82,8 +87,10 @@ class Admin(Cog):
     @p.command()
     async def ls(self, ctx):
         """ - list all available pods."""
+        self._get_all_plugins()
+       
         ps = ""
-        for plugin in self.bot.config['plugins']:
+        for plugin in self.bot.config['all_plugins']:
             plugin = plugin.strip("*")
             if plugin in [x.lower() for x in self.bot.cogs.keys()]:
                 ps += f'(✓) {plugin}\n'
@@ -102,17 +109,21 @@ class Admin(Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print('---Loading plugins---')
-        for plugin in self.bot.config['plugins']:
-            autoload = plugin[0] == '*'
-            if autoload:
-                plugin = plugin[1:]
-                try:
-                    self.bot.load_extension(f'plugins.{plugin}')
-                    print(f'Loaded {plugin}...')
-                except Exception as e:
-                    print(e)
+
+        for plugin in self.bot.config['default_plugins']:
+            try:
+                self.bot.load_extension(f'plugins.{plugin}')
+                print(f'Loaded {plugin}...')
+            except Exception as e:
+                print(e)
+
         print('Done loading plugins.')
         print('---Finished Starting---')
+
+    def _get_all_plugins(self):
+        self.bot.config['all_plugins'] = filter(lambda x: False if x is None else True, 
+                                                [name[:-3] if '.py' in name else None 
+                                                    for name in os.listdir(f"{os.getcwd()}/plugins") ])
 
 
 def setup(bot):
