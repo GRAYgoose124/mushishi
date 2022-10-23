@@ -22,8 +22,7 @@ import discord
 from discord.ext import commands
 import logging
 from pathlib import Path
-from io import UnsupportedOperation
-
+import io
 
 try:
     import uvloop
@@ -32,7 +31,6 @@ except ImportError:
     pass
 
 
-logger = logging.getLogger('bot')
 
 
 SRC_URL = 'https://github.com/GRAYgoose124/mushishi'
@@ -49,7 +47,18 @@ class BotRestart(Exception):
 
 
 class Mushishi(commands.Bot):
-    def __init__(self, config_path):
+    def __init__(self, config_path, loop=None, parent_logger=None):
+        self.logger = parent_logger.getChild("bot") if parent_logger else None
+        
+        if self.logger is None:
+            self.logger = logging.getLogger("mushishi")
+            logging.basicConfig(level=logging.INFO)
+        
+        if loop is None:
+            self.loop = asyncio.get_event_loop()
+        else:
+            self.loop = loop
+
         self.config = {}
         self.chat_history = None
 
@@ -80,12 +89,13 @@ class Mushishi(commands.Bot):
             os.mkdir(self.data_path)
             
         # Load the chat history.
-        with open(self.ch_path, mode='a') as f:
+        with open(self.ch_path, mode='r') as f:
             try:
                 self.chat_history = json.load(f)
             # TODO: Don't use exceptions for this task.
-            except (json.decoder.JSONDecodeError, UnsupportedOperation):
-                logger.info("Chat history file is empty.")
+            except (json.decoder.JSONDecodeError, io.UnsupportedOperation):
+                print(self.logger)
+                self.logger.info("Chat history file is empty.")
                 self.chat_history = {}
 
         # Load config or generate a new one.
@@ -131,14 +141,15 @@ class Mushishi(commands.Bot):
 
     async def run(self):
         try:
+            self.logger.info("Starting bot... (Loading admin extension)")
             await self.load_extension('plugins.admin')
         except Exception as e:
-            logger.error('Failed to load admin plugin.', exc_info=e)
+            self.logger.error('Failed to load admin plugin.', exc_info=e)
 
         try:
             await super().run(self.config['token'])
         except discord.LoginFailure:
-            logger.error('Invalid token.')
+            self.logger.error('Invalid token.')
         except BotRestart:
             raise BotRestart
         finally:

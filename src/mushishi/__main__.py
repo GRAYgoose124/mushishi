@@ -28,7 +28,8 @@ def argparser():
     parser = argparse.ArgumentParser(description="Mushishi: A smart discord bot using the discord.py[rewrite] API.")
     parser.add_argument('-L', '--log-level', dest='log_level', default='INFO', help='Set the log level.')
     parser.add_argument('-q', '--quiet', dest='quiet', default=False, action='store_true', help='Silence STDOUT logging.')
-
+    parser.add_argument('--passthrough-logging', dest='passthrough_logging', default=False, action='store_true', help='Disable passthrough logging to STDOUT.')
+    
     return parser.parse_args()
 
 
@@ -67,25 +68,27 @@ def main():
 
     # set up logging
     log_file = os.path.join(config_dir, 'mushishi.log')
-    log_level = LOG_LEVELS.get(args.log_level.upper(), logging.INFO)
-    logging.basicConfig(level=log_level, format='%(asctime)s %(levelname)s %(name)s %(message)s')
+    log_level = LOG_LEVELS.get(args.log_level.upper(), logging.INFO) or logging.INFO
 
     logger = logging.getLogger('mushishi')
-    logger.addHandler(logging.FileHandler(log_file).addFilter(logging.Filter('mushishi')))
+    logger.setLevel(log_level)
+
+    logging.basicConfig(level=log_level, format='%(name)s\t%(message)s')
+        
+    file_handler = logging.FileHandler(log_file)
+    file_handler.addFilter(logging.Filter('mushishi'))
+    logger.addHandler(file_handler)
 
     if not args.quiet:
-        logger.addHandler(logging.StreamHandler(sys.stdout))
+        stream_handler = logging.StreamHandler(sys.stdout)
+        if not args.passthrough_logging:
+            stream_handler.addFilter(logging.Filter('mushishi'))
 
-    try:
-        logger.setLevel(LOG_LEVELS[args.log_level])
-    except KeyError:
-        logger.setLevel(logging.INFO)
-        logger.warning(f'Invalid log level: {args.log_level}. Defaulting to INFO.')
-
+        logger.addHandler(stream_handler)
 
     # Grab our event loop and initalize the bot.
     loop = asyncio.get_event_loop()
-    bot = Mushishi(config_dir)
+    bot = Mushishi(config_dir, parent_logger=logger, loop=loop)
 
     # Lets create a task handle to run the bot so we can easily restart it.
     bot_task = loop.create_task(bot.start(bot.config['token']))
