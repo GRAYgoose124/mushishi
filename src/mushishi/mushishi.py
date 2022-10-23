@@ -153,8 +153,6 @@ class Mushishi(commands.Bot):
             self.logger.error('Invalid token.')
         except BotRestart:
             raise BotRestart
-        finally:
-            self.save_chat()
 
     async def logout(self):
         self.save_chat()

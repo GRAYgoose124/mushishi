@@ -19,3 +19,11 @@ TODO: ??move fileserver to utils allowing to start from bot
 ---
 
 TODO: Move config to ~/.config/mushishi/
+
+
+BUGS:
+On initial run with no config directory:
+ File "/home/goose/mushishi/src/mushishi/mushishi.py", line 92, in __config_setup
+FileNotFoundError: [Errno 2] No such file or directory: '/home/goose/.config/mushishi/plugins/resources/data/chat_history.json'
+
+Extension 'mushishi.plugins.factoid' raised an error: OperationalError: (sqlite3.OperationalError) unable to open database file

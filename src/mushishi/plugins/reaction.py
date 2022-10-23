@@ -37,7 +37,7 @@ class Reaction(Cog):
     async def on_message(self, m):
         isbot = m.author.id == self.bot.user.id
         if isbot:
-            await m.add_reaction(emoji="♻")
+            await m.add_reaction("♻")
 
     @commands.Cog.listener()
     async def on_command(self, c):
@@ -47,8 +47,8 @@ class Reaction(Cog):
             if any([c.message.content.startswith(f'{x}quit') for x in botpfx]):
                 return
 
-            await c.message.add_reaction(emoji="🗜")
-            await c.message.add_reaction(emoji="♻")
+            await c.message.add_reaction("🗜")
+            await c.message.add_reaction("♻")
         except NotFound as e:
             print_exc(e)
 

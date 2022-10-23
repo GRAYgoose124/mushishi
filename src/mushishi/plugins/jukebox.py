@@ -69,9 +69,9 @@ class Jukebox(Cog):
 
 
 
-def setup(bot):
+async def setup(bot):
     bot.add_cog(Jukebox(bot))
 
-def teardown(bot):
+async def teardown(bot):
     bot.vc.disconnect()
     bot.vc = None

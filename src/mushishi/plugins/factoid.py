@@ -69,13 +69,6 @@ class Fact(Base):
     response = Column(Text, nullable=False)
 
 
-engine = create_engine(db_path)
-Fact.metadata.create_all(engine)
-Base.metadata.bind = engine
-DBsession = sessionmaker(bind=engine)
-session = DBsession()  #
-
-
 class FactoidGen:
     def __init__(self):
         pass
@@ -92,6 +85,13 @@ class Factoid(Cog):
         self.bot = bot
         self.last_triggered = {}
 
+        self.engine = create_engine(db_path)
+        Fact.metadata.create_all(self.engine)
+        Base.metadata.bind = self.engine
+        self.DBsession = sessionmaker(bind=self.engine)
+        self.session = self.DBsession()  #
+
+
     @commands.group(pass_context=True)
     async def fact(self, ctx):
         """ [add|remove|find] - Simple pattern-based replies.
@@ -103,8 +103,8 @@ class Factoid(Cog):
         """ <fact> <action> <response> - Create a new factoid."""
         fact = ' '.join(fact).split(' >> ')
         if len(fact) == 2:
-            session.add(Fact(fact=fact[0], response=fact[1]))
-            session.commit()
+            self.session.add(Fact(fact=fact[0], response=fact[1]))
+            self.session.commit()
             await ctx.send(f'Factoid: ``{fact}`` saved.')
         else:
             await ctx.send(f'`{fact}` was malformed. RTFM.')
@@ -113,10 +113,10 @@ class Factoid(Cog):
     @commands.is_owner()
     async def rm(self, ctx, fact_id: int):
         """ <id> - Removes a factoid by id."""
-        factoid = session.query(Fact).get(fact_id)
+        factoid = self.session.query(Fact).get(fact_id)
         factoid_str = f'{factoid.id}: {factoid.fact} -> {factoid.response}\n'
         factoid.delete()
-        session.commit()
+        self.session.commit()
         await ctx.send(f'Factoid: `{factoid_str}` deleted.')
 
     @fact.command()
@@ -128,7 +128,7 @@ class Factoid(Cog):
             pass
         else:
             f = Fact.fact.like(f'%{q}%') | Fact.response.like(f'%{q}%')
-            for result in session.query(Fact).filter(f):
+            for result in self.session.query(Fact).filter(f):
                 results += f'{result.id}: {result.fact} -> {result.response}\n'
 
         await ctx.send(embed=Embed(
@@ -136,7 +136,7 @@ class Factoid(Cog):
 
     @fact.command()
     async def get(self, ctx, index: int):
-        for result in session.query(Fact).filter(Fact.id):
+        for result in self.session.query(Fact).filter(Fact.id):
             d = f'```{result.fact} -> {result.response}```\n'
             await ctx.send(embed=Embed(title=f'Fact {index}', description=d))
 
@@ -145,7 +145,7 @@ class Factoid(Cog):
         if m.author.bot:
             return
 
-        factoid = session.query(Fact)\
+        factoid = self.session.query(Fact)\
             .filter(Fact.fact.op('REGEXP')(f'{m.content}'))\
             .order_by(func.random())\
             .first()
@@ -166,7 +166,7 @@ async def setup(bot):
 
 async def teardown(bot):
     print('Factoid: Committing db.')
-    session.commit()
+    self.session.commit()
     print('Factoid: Closing db.')
-    session.close()
+    self.session.close()
     print('Factoid: Done.')

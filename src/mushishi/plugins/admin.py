@@ -55,11 +55,13 @@ class Admin(Cog):
     async def ld(self, ctx, plugin: str):
         """ <name> - load a pod """
         try:
-            if plugin in self.bot.config['all_plugins']:
+            print(list(self.bot.config['all_plugins']))
+            if plugin not in self.bot.config['all_plugins']:
                 raise ValueError
 
             await self.rm(ctx, plugin)
-            self.bot.load_extension(f'plugins{plugin}')
+            # Change this to locate foreign plugins
+            await self.bot.load_extension(f'mushishi.plugins.{plugin}')
             print(f"{plugin} loaded.")
             
             if '🔴' in ctx.message.reactions:
@@ -73,6 +75,7 @@ class Admin(Cog):
             if isinstance(e, ExtensionAlreadyLoaded):
                 print("Pod reload failed. (Not unloaded)")
             if isinstance(e, ExtensionNotFound) or isinstance(e, ValueError):
+                self.logger.warning(f"Plugin {plugin} not found.", exc_info=e)
                 await ctx.send("No such pod exists.")
 
             if '✅' in ctx.message.reactions:
@@ -86,7 +89,8 @@ class Admin(Cog):
         if plugin == "admin":
             await ctx.message.add_reaction(emoji='🚫')
         elif plugin in [x.lower() for x in self.bot.cogs.keys()]:
-            self.bot.unload_extension(f'plugins.{plugin}')
+            # TODO: change with L121 and 135
+            self.bot.unload_extension(f'mushishi.plugins.{plugin}')
             # delete pycache?
             print(f'{plugin} unloaded.')
 
