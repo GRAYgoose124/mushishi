@@ -3,9 +3,7 @@
 *.db
 *.log
 .idea/*
-plugins/resources/images/*
-plugins/resources/data/*
-plugins/resources/videos/*
+**/plugins/resources/*
 changelog
 scratch*
 .vscode/*
@@ -16,3 +14,7 @@ test*.*
 music.py
 *.code-workspace
 *.*rc
+TODO
+*.lock
+dist/*
+**/*.egg-info/*

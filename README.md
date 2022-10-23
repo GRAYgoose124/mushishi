@@ -1,4 +1,4 @@
-# About Mushishi ``v0.0.9``
+# About Mushishi ``v0.1.0``
 Mushishi is a plugin-based bot focused on mimicking "human intelligence" with
 features such as Factoids, Markov chains, and basic NLP.
 
@@ -39,9 +39,14 @@ Check the TODO for a glance at future plans.
     m.fact add Hello World! >> Hi Human!
 
 # Installation
-Clone the source to a local directory:
+    # Clone the source to a local directory:
+    > git clone git@github.com:GRAYgoose124/mushishi.git
+    > cd mushishi
+    > poetry shell  # Only if you want a virtual environment.
 
-    git clone git@github.com:GRAYgoose124/mushishi.git
+    > poetry install
+    # Run mushishi, you can also use poetry run to enter using the '__main__' == '__name__' entry.
+    > mushishi
 
 # Running
 cd to parent directory of mushishi then run:
