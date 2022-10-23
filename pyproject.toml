@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mushishi"
-version = "0.2.0"
+version = "0.1.5"
 description = "Discord bot in python"
 authors = ["Grayson Miller <grayson.miller124@gmail.com>"]
 license = "GPLv3"

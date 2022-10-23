@@ -21,12 +21,18 @@ from discord.ext.commands import (Cog,
                                   ExtensionFailed)
 import traceback
 import os
+import logging
+
+
+logger = logging.getLogger('plugin:admin')
+
 
 class Admin(Cog):
     """Commands related to plugin administration functionality.
     Many require owner/admin permissions.
     """
     def __init__(self, bot):
+        logger.debug('Initializing Admin cog.')
         self.bot = bot
         self.interactive = False
 

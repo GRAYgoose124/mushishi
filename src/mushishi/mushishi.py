@@ -17,8 +17,10 @@ import json
 import asyncio
 import os
 import re
+import sys
 import discord
 from discord.ext import commands
+import logging
 from pathlib import Path
 from io import UnsupportedOperation
 
@@ -30,22 +32,36 @@ except ImportError:
     pass
 
 
+logger = logging.getLogger('mushishi')
+
+
+SRC_URL = 'https://github.com/GRAYgoose124/mushishi'
+DEFAULT_CONFIG = {"token": "<TOKEN>",
+                    'default_plugins': ["utils", "reaction"],
+                    'prefixes': ["m.", "mu ", "\N{BUG} "],
+                    'source_url': SRC_URL,
+                    'resource_host': ""
+                }
+
+
+class BotRestart(Exception):
+    pass
+
+
 class Mushishi(commands.Bot):
     def __init__(self, config_path):
         self.config = {}
         self.chat_history = None
-        self.__config_setup(config_path)
 
-        self.dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.plugins_path = os.path.join(self.dir_path, 'plugins')
-        self.resource_path = os.path.join(self.dir_path, 'plugins',
-                                          'resources')
+        self.config_path = config_path
+        self.plugins_path = os.path.join(self.config_path, 'plugins')
+        self.resource_path = os.path.join(self.plugins_path, 'resources')
         self.data_path = os.path.join(self.resource_path, 'data')
+
+        self.config_file = os.path.join(self.config_path, 'config.json')
         self.ch_path = os.path.join(self.data_path, 'chat_history.json')
 
-        if not os.path.isfile(self.ch_path):
-            # TODO: Update all to use Paths.
-            Path(self.ch_path).touch()
+        self.__config_setup()
 
         # Load chat history
         # use append mode so that if the file doesn't exist, we create it.
@@ -53,31 +69,46 @@ class Mushishi(commands.Bot):
             try:
                 self.chat_history = json.load(f)
             # TODO: Don't use exceptions for this task.
-            except (json.JSONDecodeError, UnsupportedOperation) :
+            except (json.JSONDecodeError, UnsupportedOperation):
+                logger.info("Chat history file is empty.")
                 self.chat_history = {}
 
         # Intents Patch TODO: review
         intents = discord.Intents.all()
-
         super().__init__(self.config['prefixes'], intents=intents)
 
-    def __config_setup(self, config_path):
-        if os.path.exists(config_path):
-            with open(config_path, 'r') as f:
+    def __config_setup(self):
+        """Setup the config file and directories."""
+        # Create each directory if it doesn't exist.
+        if not os.path.isdir(self.config_path):
+            os.mkdir(self.config_path)
+        if not os.path.isdir(self.plugins_path):
+            os.mkdir(self.plugins_path)
+        if not os.path.isdir(self.resource_path):
+            os.mkdir(self.resource_path)
+        if not os.path.isdir(self.data_path):
+            os.mkdir(self.data_path)
+            
+        # Load the chat history.
+        if os.path.exists(self.ch_path):
+            with open(self.ch_path, 'r') as f:
+                self.chat_history = json.load(f)
+        else:
+            self.chat_history = {}
+
+        # Load config or generate a new one.
+        if os.path.exists(self.config_file):
+            with open(self.config_file, 'r') as f:
                 self.config = json.load(f)
         else:
-            src_url = 'https://github.com/GRAYgoose124/mushishi'
-            self.config = {"token": "<TOKEN>",
-                           'default_plugins': ["utils", "reaction"],
-                           'prefixes': ["m.", "mu ", "\N{BUG} "],
-                           'source_url': src_url,
-                           'resource_host': ""
-                           }
+            self.config = DEFAULT_CONFIG   
 
-            with open(config_path, 'w') as f:
+            # Dump default config to file.
+            with open(self.config_file, 'w') as f:
                 json.dump(self.config, f)
 
-            raise FileNotFoundError("Please edit the generated config file.")
+            # Fail and tell the user to edit the config.
+            raise FileNotFoundError("Please edit the generated config file to add your bot token.")
 
     async def on_message(self, m):
         bpfx = any([m.content.startswith(x) for x in self.config['prefixes']])
@@ -106,11 +137,18 @@ class Mushishi(commands.Bot):
             json.dump(self.chat_history, f, sort_keys=True)
         print("Core: Done saving.")
 
-    def run(self):
-        self.load_extension('plugins.admin')
+    async def run(self):
+        try:
+            await self.load_extension('plugins.admin')
+        except Exception as e:
+            logger.error('Failed to load admin plugin.', exc_info=e)
 
-        super().run(self.config['token'])
-        # loop = asyncio.get_event_loop()
-        # loop.run_until_complete(self.start(self.config['token'], bot=True))
+        try:
+            await super().run(self.config['token'])
+        except discord.LoginFailure:
+            logger.error('Invalid token.')
+        except BotRestart:
+            raise BotRestart
+        finally:
+            self.save_chat()
 
-        self.save_chat()
