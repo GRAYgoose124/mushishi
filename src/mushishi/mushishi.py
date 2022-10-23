@@ -17,7 +17,10 @@ import json
 import asyncio
 import os
 import re
+import discord
 from discord.ext import commands
+from pathlib import Path
+from io import UnsupportedOperation
 
 
 try:
@@ -41,17 +44,22 @@ class Mushishi(commands.Bot):
         self.ch_path = os.path.join(self.data_path, 'chat_history.json')
 
         if not os.path.isfile(self.ch_path):
-            with open(self.ch_path, mode='w+'):
-                pass
+            # TODO: Update all to use Paths.
+            Path(self.ch_path).touch()
 
         # Load chat history
-        with open(self.ch_path, mode='r') as f:
+        # use append mode so that if the file doesn't exist, we create it.
+        with open(self.ch_path, mode='a') as f:
             try:
                 self.chat_history = json.load(f)
-            except json.JSONDecodeError:
+            # TODO: Don't use exceptions for this task.
+            except (json.JSONDecodeError, UnsupportedOperation) :
                 self.chat_history = {}
 
-        super().__init__(command_prefix=self.config['prefixes'])
+        # Intents Patch TODO: review
+        intents = discord.Intents.all()
+
+        super().__init__(self.config['prefixes'], intents=intents)
 
     def __config_setup(self, config_path):
         if os.path.exists(config_path):
