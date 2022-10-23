@@ -17,10 +17,19 @@ import os
 import asyncio
 import logging
 import sys
+import argparse
 from .mushishi import Mushishi, BotRestart
 
 
-logger = logging.getLogger('main')
+LOG_LEVELS = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR, 'CRITICAL': logging.CRITICAL}
+
+
+def argparser():
+    parser = argparse.ArgumentParser(description="Mushishi: A smart discord bot using the discord.py[rewrite] API.")
+    parser.add_argument('-L', '--log-level', dest='log_level', default='INFO', help='Set the log level.')
+    parser.add_argument('-q', '--quiet', dest='quiet', default=False, action='store_true', help='Silence STDOUT logging.')
+
+    return parser.parse_args()
 
 
 def get_config_path(custom_dir=None):
@@ -53,9 +62,25 @@ def main():
         to handle it. 
 
     """
+    args = argparser()
     config_dir = get_config_path()
 
-    logger.info("\t--\tWelcome to Mushishi!\tEnjoy your bug-catching experience!\t--")
+    # set up logging
+    log_file = os.path.join(config_dir, 'mushishi.log')
+    log_level = LOG_LEVELS.get(args.log_level.upper(), logging.INFO)
+    logging.basicConfig(level=log_level, format='%(asctime)s %(levelname)s %(name)s %(message)s')
+
+    logger = logging.getLogger('mushishi')
+    logger.addHandler(logging.FileHandler(log_file).addFilter(logging.Filter('mushishi')))
+
+    if not args.quiet:
+        logger.addHandler(logging.StreamHandler(sys.stdout))
+
+    try:
+        logger.setLevel(LOG_LEVELS[args.log_level])
+    except KeyError:
+        logger.setLevel(logging.INFO)
+        logger.warning(f'Invalid log level: {args.log_level}. Defaulting to INFO.')
 
 
     # Grab our event loop and initalize the bot.
@@ -65,31 +90,23 @@ def main():
     # Lets create a task handle to run the bot so we can easily restart it.
     bot_task = loop.create_task(bot.start(bot.config['token']))
     try:
+        print("\t--\tWelcome to Mushishi!\tEnjoy your bug-catching experience!\t--")
+
         loop.run_until_complete(bot_task)
-    except Exception as any_exception:
-        # For any exception, we want to full log out and cancel the task.
+    except KeyboardInterrupt as _e:
         bot_task.cancel()
         loop.run_until_complete(bot.logout())
-        loop.run_until_complete(bot.close())
 
-        # If the exception is a KeyboardInterrupt, we want to ask the user if
-        # they want to restart the bot.
-        if isinstance(any_exception, KeyboardInterrupt):
-            question = input("Restart? [y/N] ")
-            if question.lower() == 'y':
-                logger.info("Restarting...")
-                main()
-            else:
-                # Just exit properly if they don't want to restart.
-                loop.close()
-                sys.exit(0)    
+        question = input("Restart? [y/N] ")
+        if question.lower() == 'y':
+            print("Restarting...")
+            main()
         else:
-            # If it's not a KeyboardInterrupt, we want to log the exception and
-            # exit.
-            logger.error(f"\t--\t Mushishi failed poorly\t-- {any_exception}")
-            raise any_exception
+            # Just exit properly if they don't want to restart.
+            loop.close()
+            sys.exit(0)    
     finally:
-        logger.info("\t--\tShutdown complete\t--\n{}Goodbye... \U0001F41B".format("\t"*15))
+        print("\t--\tShutdown complete\t--\n{}Goodbye... \U0001F41B".format("\t"*15))
 
  
 

@@ -32,7 +32,7 @@ except ImportError:
     pass
 
 
-logger = logging.getLogger('mushishi')
+logger = logging.getLogger('bot')
 
 
 SRC_URL = 'https://github.com/GRAYgoose124/mushishi'
@@ -63,16 +63,6 @@ class Mushishi(commands.Bot):
 
         self.__config_setup()
 
-        # Load chat history
-        # use append mode so that if the file doesn't exist, we create it.
-        with open(self.ch_path, mode='a') as f:
-            try:
-                self.chat_history = json.load(f)
-            # TODO: Don't use exceptions for this task.
-            except (json.JSONDecodeError, UnsupportedOperation):
-                logger.info("Chat history file is empty.")
-                self.chat_history = {}
-
         # Intents Patch TODO: review
         intents = discord.Intents.all()
         super().__init__(self.config['prefixes'], intents=intents)
@@ -90,11 +80,13 @@ class Mushishi(commands.Bot):
             os.mkdir(self.data_path)
             
         # Load the chat history.
-        if os.path.exists(self.ch_path):
-            with open(self.ch_path, 'r') as f:
+        with open(self.ch_path, mode='a') as f:
+            try:
                 self.chat_history = json.load(f)
-        else:
-            self.chat_history = {}
+            # TODO: Don't use exceptions for this task.
+            except (json.decoder.JSONDecodeError, UnsupportedOperation):
+                logger.info("Chat history file is empty.")
+                self.chat_history = {}
 
         # Load config or generate a new one.
         if os.path.exists(self.config_file):
@@ -133,7 +125,7 @@ class Mushishi(commands.Bot):
 
     def save_chat(self):
         print("Core: Saving messages...")
-        with open(self.ch_path, mode='w+') as f:
+        with open(self.ch_path, mode='w') as f:
             json.dump(self.chat_history, f, sort_keys=True)
         print("Core: Done saving.")
 
@@ -152,3 +144,6 @@ class Mushishi(commands.Bot):
         finally:
             self.save_chat()
 
+    async def logout(self):
+        self.save_chat()
+        await super().close()
