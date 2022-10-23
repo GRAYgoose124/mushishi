@@ -118,7 +118,8 @@ class Admin(Cog):
 
         for plugin in self.bot.config['default_plugins']:
             try:
-                self.bot.load_extension(f'plugins.{plugin}')
+                # Can probably hack this to import foreign plugins
+                await self.bot.load_extension(f'mushishi.plugins.{plugin}')
                 print(f'Loaded {plugin}...')
             except Exception as e:
                 print(e)
@@ -129,18 +130,19 @@ class Admin(Cog):
     def _get_all_plugins(self):
         self.bot.config['all_plugins'] = filter(lambda x: False if x is None else True, 
                                                 [name[:-3] if '.py' in name else None 
-                                                    for name in os.listdir(f"{os.getcwd()}/plugins") ])
+                                                    # TODO modify this along with L:121 and the similar line in start
+                                                    for name in os.listdir(f"{os.getcwd()}/src/mushishi/plugins")])
 
 
-def setup(bot):
-    bot.add_cog(Admin(bot))
+async def setup(bot):
+    await bot.add_cog(Admin(bot))
 
 
-def teardown(bot):
+async def teardown(bot):
     print("---Shutting down plugins---")
     for plugin in bot.loaded_plugins:
         print(f'Unloading {plugin}...')
         try:
-            bot.unload_extension(plugin)
+           await bot.unload_extension(plugin)
         except AttributeError as e:
             traceback.print_tb(e.__traceback__)

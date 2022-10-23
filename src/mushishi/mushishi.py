@@ -35,7 +35,7 @@ except ImportError:
 
 SRC_URL = 'https://github.com/GRAYgoose124/mushishi'
 DEFAULT_CONFIG = {"token": "<TOKEN>",
-                    'default_plugins': ["utils", "reaction"],
+                    'default_plugins': ["utils", "reaction", "factoid"],
                     'prefixes': ["m.", "mu ", "\N{BUG} "],
                     'source_url': SRC_URL,
                     'resource_host': ""
@@ -53,7 +53,7 @@ class Mushishi(commands.Bot):
         if self.logger is None:
             self.logger = logging.getLogger("mushishi")
             logging.basicConfig(level=logging.INFO)
-        
+
         if loop is None:
             self.loop = asyncio.get_event_loop()
         else:
@@ -139,15 +139,16 @@ class Mushishi(commands.Bot):
             json.dump(self.chat_history, f, sort_keys=True)
         print("Core: Done saving.")
 
-    async def run(self):
+    async def start(self):
+        print("Core: Starting bot...")
         try:
-            self.logger.info("Starting bot... (Loading admin extension)")
-            await self.load_extension('plugins.admin')
+            # TODO: Broken because poetry doesn't install the package properly.
+            await self.load_extension('mushishi.plugins.admin')
         except Exception as e:
             self.logger.error('Failed to load admin plugin.', exc_info=e)
 
         try:
-            await super().run(self.config['token'])
+            await super().start(self.config['token'])
         except discord.LoginFailure:
             self.logger.error('Invalid token.')
         except BotRestart:

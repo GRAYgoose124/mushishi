@@ -91,7 +91,7 @@ def main():
     bot = Mushishi(config_dir, parent_logger=logger, loop=loop)
 
     # Lets create a task handle to run the bot so we can easily restart it.
-    bot_task = loop.create_task(bot.start(bot.config['token']))
+    bot_task = loop.create_task(bot.start())
     try:
         print("\t--\tWelcome to Mushishi!\tEnjoy your bug-catching experience!\t--")
 

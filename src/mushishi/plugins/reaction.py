@@ -102,5 +102,5 @@ class Reaction(Cog):
             await ctx.message.add_reaction(emoji=em)
 
 
-def setup(bot):
-    bot.add_cog(Reaction(bot))
+async def setup(bot):
+    await bot.add_cog(Reaction(bot))

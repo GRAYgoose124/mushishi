@@ -115,5 +115,5 @@ class Utils(Cog):
         self.status_timestamps[after.id] = (time.perf_counter(), after.status)
 
 
-def setup(bot):
-    bot.add_cog(Utils(bot))
+async def setup(bot):
+    await bot.add_cog(Utils(bot))

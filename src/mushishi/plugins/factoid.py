@@ -160,11 +160,11 @@ class Factoid(Cog):
                 self.last_triggered[factoid.id] = time()
 
 
-def setup(bot):
-    bot.add_cog(Factoid(bot))
+async def setup(bot):
+    await bot.add_cog(Factoid(bot))
 
 
-def teardown(bot):
+async def teardown(bot):
     print('Factoid: Committing db.')
     session.commit()
     print('Factoid: Closing db.')

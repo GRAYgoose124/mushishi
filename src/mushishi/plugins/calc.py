@@ -153,6 +153,6 @@ class Plot(Cog):
                                    description=valid_eq).set_image(url=url))
 
 
-def setup(bot):
-    bot.add_cog(Calc(bot))
-    bot.add_cog(Plot(bot))
+async def setup(bot):
+    await bot.add_cog(Calc(bot))
+    await bot.add_cog(Plot(bot))
