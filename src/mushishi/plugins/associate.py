@@ -165,9 +165,9 @@ class Associate(Cog):
         self.bot = bot
 
 
-def setup(bot):
-    bot.add_cog(Associate(bot))
-    bot.add_cog(WordGraphPod(bot))
+async def setup(bot):
+    await bot.add_cog(Associate(bot))
+    await bot.add_cog(WordGraphPod(bot))
 
 
 if __name__ == '__main__':

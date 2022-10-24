@@ -55,10 +55,10 @@ class Admin(Cog):
     async def ld(self, ctx, plugin: str):
         """ <name> - load a pod """
         try:
-            print(list(self.bot.config['all_plugins']))
             if plugin not in self.bot.config['all_plugins']:
+                print(plugin, 'not in', self.bot.config['all_plugins'])
                 raise ValueError
-
+            
             await self.rm(ctx, plugin)
             # Change this to locate foreign plugins
             await self.bot.load_extension(f'mushishi.plugins.{plugin}')
