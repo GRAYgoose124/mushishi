@@ -166,7 +166,7 @@ async def setup(bot):
 
 async def teardown(bot):
     print('Factoid: Committing db.')
-    self.session.commit()
+    bot.session.commit()
     print('Factoid: Closing db.')
-    self.session.close()
+    bot.session.close()
     print('Factoid: Done.')

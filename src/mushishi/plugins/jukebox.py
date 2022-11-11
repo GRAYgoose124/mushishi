@@ -21,8 +21,6 @@ class Jukebox(Cog):
             with open(self.ch_path, mode='w+'):
                 pass
 
-
-
     @commands.command(pass_context=True)
     async def yt(self, ctx, *search):
         author = ctx.message.author
@@ -30,13 +28,10 @@ class Jukebox(Cog):
         search = (' ').join(search)
 
 
-
-        fp = os.path.join(self.bot.resource_path,
-                            'music', '%(title)s.%(ext)s')
-
         ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': fp,
+            'outtmpl': os.path.join(self.bot.resource_path,
+                            'music', '%(id)s.%(ext)s'),
             'noplaylist': True,
             'progress_hooks': [],
             'default_search': "ytsearch",
@@ -53,11 +48,11 @@ class Jukebox(Cog):
 
         result = None
         with YoutubeDL(ydl_opts) as ydl:
-            result = ydl.extract_info(search, download=True)
+            result = ydl.extract_info(search)
 
         print(result['entries'][0])   
-        fn = result['entries'][0]['title'] + '.' + result['entries'][0]['ext']
-        fp = os.path.join(self.bot.resource_path, 'music', fn.replace(' ', '_'))
+        fn = result['entries'][0]['id'] + '.' + result['entries'][0]['ext']
+        fp = os.path.join(self.bot.resource_path, 'music', fn)
         
         try:
             self.vc = await voice_channel.connect()
@@ -72,9 +67,7 @@ class Jukebox(Cog):
         except Exception as e:
             print(e)
 
-        await ctx.send(f"Now playing: {fn}")
-
-
+        await ctx.send(f"Now playing: {result['entries'][0]['title']}")
 
 
 async def setup(bot):

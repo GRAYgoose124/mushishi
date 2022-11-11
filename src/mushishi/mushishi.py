@@ -25,8 +25,9 @@ from pathlib import Path
 import io
 
 try:
-    import uvloop
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    if os.name == 'nt':
+        import uvloop
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except ImportError:
     pass
 
