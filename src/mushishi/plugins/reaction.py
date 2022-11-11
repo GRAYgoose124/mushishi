@@ -57,6 +57,7 @@ class Reaction(Cog):
         # Delete invalid bot command
         cmdnotfound = type(error) == commands.CommandNotFound
         isDM = isinstance(command.channel, DMChannel)
+        
         if cmdnotfound and not isDM:
             await command.message.delete()
 
@@ -70,8 +71,8 @@ class Reaction(Cog):
                         if isinstance(r.message.channel, DMChannel):
                             return
 
-                        rperc = r.count > len(r.message.channel.members) / 3
-                        if rperc or user.id == self.bot.owner_id:
+                        reaction_poll = r.count > len(r.message.channel.members) / 3
+                        if reaction_poll or user.id == self.bot.owner_id or user.id == r.message.author.id:
                             await r.message.delete()
                     except AttributeError:
                         await r.message.delete()

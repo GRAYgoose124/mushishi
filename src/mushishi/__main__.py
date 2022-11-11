@@ -100,10 +100,13 @@ def main():
         loop.run_until_complete(bot.logout())
         bot_task.cancel()
 
-        if not bot._restart:
-            question = input("Restart? [y/N] ")
+        if hasattr(bot, '_restart'):
+            if bot._restart:
+                question = 'y'
+            else: 
+                question = 'N'
         else:
-            question = 'y'
+            question = input("Restart? [y/N] ")
 
         if question.lower() == 'y':
             # _restart is used by plugins.admin.restart to skip question

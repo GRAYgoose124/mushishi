@@ -1,3 +1,4 @@
+import asyncio
 from discord.ext.commands import Cog
 from discord.ext import commands
 import discord
@@ -12,21 +13,50 @@ class Jukebox(Cog):
 
         self.bot = bot
         self.vc = None
-        self.currently_playing = None
+        self.queue = []
 
-        vd = os.path.join(self.bot.resource_path, 'videos')
-        if not os.path.isdir(vd):
-            os.mkdir(vd)
+        music_dir = os.path.join(self.bot.resource_path, 'music')
+        if not os.path.isdir(music_dir):
+            os.mkdir(music_dir)
         if not os.path.isfile(self.bot.ch_path):
             with open(self.ch_path, mode='w+'):
                 pass
 
-    @commands.command(pass_context=True)
-    async def yt(self, ctx, *search):
+    @commands.command()
+    async def yt_queue(self, ctx):
+        pretty_queue = '\n'.join([f"{i+1}. {title}" for i, (title, _) in enumerate(self.queue)])
+        await ctx.send(f"Current queue: {pretty_queue}")
+
+    def play_next(self, ctx):
+        if len(self.queue) > 0:
+            self.currently_playing = self.queue.pop(0)
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(self.currently_playing[1]))
+
+            ctx.voice_client.play(source, after=lambda _: self.play_next(ctx))
+
+    async def play_result(self, ctx, result):
         author = ctx.message.author
         voice_channel = author.voice.channel
-        search = (' ').join(search)
 
+        title = result['entries'][0]['title']
+
+        fn = result['entries'][0]['id'] + '.' + result['entries'][0]['ext']
+        fp = os.path.join(self.bot.resource_path, 'music', fn)
+        self.queue.append(title, fp) 
+
+        if self.vc is None or self.vc.channel.id != voice_channel.id:
+            self.vc = await voice_channel.connect()
+
+        self.logger.info(ctx.voice_client, self.vc, self.vc.is_playing(), ctx.voice_client.is_playing())
+        if ctx.voice_client.is_playing():
+            await ctx.send(f"Queued for play (#{len(self.queue)}): {title}")
+        else:
+            await ctx.send(f"Now playing: {title}")
+            self.play_next(ctx)
+
+    @commands.command(pass_context=True)
+    async def yt(self, ctx, *search):
+        search = (' ').join(search)
 
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -46,29 +76,14 @@ class Jukebox(Cog):
             'source_address': '0.0.0.0'
         }
 
-        result = None
-        with YoutubeDL(ydl_opts) as ydl:
-            result = ydl.extract_info(search)
+        # result = None
+        # with YoutubeDL(ydl_opts) as ydl:
+        #     result = ydl.extract_info(search)
 
-        fn = result['entries'][0]['id'] + '.' + result['entries'][0]['ext']
-        fp = os.path.join(self.bot.resource_path, 'music', fn)
-        
-        try:
-            if self.vc is None or self.vc.name != voice_channel.name:
-                self.vc = await voice_channel.connect()
-        except Exception as e:
-            print(e)
+        # await self.play_result(ctx, result)
 
-        try:
-            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(fp))
-            ctx.voice_client.play(
-                source, after=lambda e: print("Player error: %s" % e) if e else None
-            )
-        except Exception as e:
-            print(e)
-
-        await ctx.send(f"Now playing: {result['entries'][0]['title']}")
-
+        future = self.bot.loop.run_in_executor(None, YoutubeDL(ydl_opts).extract_info, search)
+        future.add_done_callback(lambda f: asyncio.ensure_future(self.play_result(ctx, f.result())))
 
 async def setup(bot):
     await bot.add_cog(Jukebox(bot))
