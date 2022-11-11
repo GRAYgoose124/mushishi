@@ -7,6 +7,9 @@ import os
 
 class Jukebox(Cog):
     def __init__(self, bot):
+        self.logger = bot.logger.getChild("plugin/jukebox")
+        self.logger.debug('Initializing Admin cog.')
+
         self.bot = bot
         self.vc = None
         self.currently_playing = None
@@ -27,50 +30,52 @@ class Jukebox(Cog):
         search = (' ').join(search)
 
         try:
-            if self.vc is not None or not self.vc == voice_channel:
-                self.vc = await voice_channel.connect()
+            self.vc = await voice_channel.connect()
         except Exception as e:
             print(e)
 
-        if self.vc is not None:
-            fp = os.path.join(self.bot.resource_path,
-                              'videos', '%(title)s.%(ext)s')
+        fp = os.path.join(self.bot.resource_path,
+                            'videos', '%(title)s.%(ext)s')
 
-            ydl_opts = {
-                'format': 'bestaudio/best',
-                'outtmpl': fp,
-                'noplaylist': True,
-                'progress_hooks': [],
-                'default_search': "ytsearch",
-                'max_downloads': 1,
-                'restrictfilenames': True,
-                'noplaylist': True,
-                'nocheckcertificate': True,
-                'ignoreerrors': False,
-                'logtostderr': True,
-                'quiet': False,
-                'no_warnings': True,
-                'source_address': '0.0.0.0'
-            }
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': fp,
+            'noplaylist': True,
+            'progress_hooks': [],
+            'default_search': "ytsearch",
+            'max_downloads': 1,
+            'restrictfilenames': True,
+            'noplaylist': True,
+            'nocheckcertificate': True,
+            'ignoreerrors': False,
+            'logtostderr': True,
+            'quiet': False,
+            'no_warnings': True,
+            'source_address': '0.0.0.0'
+        }
 
-            with YoutubeDL(ydl_opts) as ydl:
-                ydl.download([search])
+        result = None
+        with YoutubeDL(ydl_opts) as ydl:
+            result = ydl.extract_info(search, download=True)
+            
+        fn = result['entries'][0]['title'] + '.' + result['entries'][0]['ext']
+        fp = os.path.join(self.bot.resource_path, 'videos', fn)
 
-            try:
-                source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(fp))
-                ctx.voice_client.play(
-                    source, after=lambda e: print("Player error: %s" % e) if e else None
-                )
-            except Exception as e:
-                print(e)
+        try:
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(fp))
+            ctx.voice_client.play(
+                source, after=lambda e: print("Player error: %s" % e) if e else None
+            )
+        except Exception as e:
+            print(e)
 
-            await ctx.send(f"Now playing: {search}")
+        await ctx.send(f"Now playing: {search}")
 
 
 
 
 async def setup(bot):
-    bot.add_cog(Jukebox(bot))
+    await bot.add_cog(Jukebox(bot))
 
 async def teardown(bot):
     bot.vc.disconnect()

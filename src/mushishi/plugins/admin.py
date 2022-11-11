@@ -90,7 +90,7 @@ class Admin(Cog):
             await ctx.message.add_reaction(emoji='🚫')
         elif plugin in [x.lower() for x in self.bot.cogs.keys()]:
             # TODO: change with L121 and 135
-            self.bot.unload_extension(f'mushishi.plugins.{plugin}')
+            await self.bot.unload_extension(f'mushishi.plugins.{plugin}')
             # delete pycache?
             print(f'{plugin} unloaded.')
 

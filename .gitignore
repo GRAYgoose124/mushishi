@@ -18,3 +18,4 @@ TODO
 *.lock
 dist/*
 **/*.egg-info/*
+.venv/
