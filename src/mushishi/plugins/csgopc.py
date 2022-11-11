@@ -16,10 +16,10 @@ class CSGOPC(Cog):
         'X-Requested-With': 'XMLHttpRequest'
         }
 
-
     def __init__(self, bot):
         self.bot = bot
-        self.session = requests.Session()'ve e b'
+        self.session = requests.Session()
+
     @commands.command()
     async def pricecheck(self, ctx, *url):
         if isinstance(url, list):
@@ -39,4 +39,4 @@ class CSGOPC(Cog):
         await ctx.send(last_shot_url)
 
 def setup(bot):
-    bot.add_cog(Rolemaster(bot))
+    bot.add_cog(CSGOPC(bot))

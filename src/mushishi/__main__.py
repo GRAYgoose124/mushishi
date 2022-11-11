@@ -97,11 +97,17 @@ def main():
 
         loop.run_until_complete(bot_task)
     except KeyboardInterrupt as _e:
-        bot_task.cancel()
         loop.run_until_complete(bot.logout())
+        bot_task.cancel()
 
-        question = input("Restart? [y/N] ")
+        if not bot._restart:
+            question = input("Restart? [y/N] ")
+        else:
+            question = 'y'
+
         if question.lower() == 'y':
+            # _restart is used by plugins.admin.restart to skip question
+            bot._restart = False
             print("Restarting...")
             main()
         else:

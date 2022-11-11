@@ -116,6 +116,13 @@ class Admin(Cog):
         """ shutdown mushishi """
         await ctx.bot.logout()
 
+    @commands.command()
+    @commands.is_owner()
+    async def restart(self, ctx):
+        """ shutdown mushishi """
+        self.bot._restart = True
+        raise KeyboardInterrupt
+
     @commands.Cog.listener()
     async def on_ready(self):
         print('---Loading plugins---')

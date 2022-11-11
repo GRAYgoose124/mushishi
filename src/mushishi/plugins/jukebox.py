@@ -50,12 +50,12 @@ class Jukebox(Cog):
         with YoutubeDL(ydl_opts) as ydl:
             result = ydl.extract_info(search)
 
-        print(result['entries'][0])   
         fn = result['entries'][0]['id'] + '.' + result['entries'][0]['ext']
         fp = os.path.join(self.bot.resource_path, 'music', fn)
         
         try:
-            self.vc = await voice_channel.connect()
+            if self.vc is None or self.vc.name != voice_channel.name:
+                self.vc = await voice_channel.connect()
         except Exception as e:
             print(e)
 

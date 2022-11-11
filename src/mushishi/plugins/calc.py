@@ -66,9 +66,9 @@ class Calc(Cog):
             except ValueError:
                 try:
                     if op == 'pi':
-                        stack.append(np.pi)
+                        stack.append(pi)
                     elif op == 'e':
-                        stack.append(np.e)
+                        stack.append(e)
                     else:
                         a = stack.pop()
                         if op == '+':
@@ -92,9 +92,9 @@ class Calc(Cog):
                             b = stack.pop()
                             stack.append(b / a)
                         elif op == 'sin':
-                            stack.append(np.sin(a))
+                            stack.append(sin(a))
                         elif op == 'cos':
-                            stack.append(np.cos(a))
+                            stack.append(cos(a))
                 except IndexError:
                     response = "Invalid RPN \"{}\", {}".format(equation, stack)
 
