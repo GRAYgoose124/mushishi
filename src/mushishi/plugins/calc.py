@@ -15,14 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import random
 from time import time
-import numpy as np
+from numpy import *
 from matplotlib import pyplot as plt
 # import scipy
 # import scipy.integrate as integrate
 from discord import Embed
 from discord.ext import commands
-from os import path
 from discord.ext.commands import Cog
+import os
 
 
 class EquationGraph:
@@ -104,34 +104,42 @@ class Calc(Cog):
 
 
 class Plot(Cog):
+    blacklist = ["import", "os", "sys", "discord", "subprocess", "eval", "exec", "open", "file", "path", "pickle", "shelve", "exit", "run"]
+
     def __init__(self, bot):
         self.bot = bot
 
-    def _plot_equation(self, equation, x_view=10, x_res=0.01, image=False):
+    def _plot_equation(self, equation, x_view=10, x_res=0.01, display=False):
         """"""
-        x = np.arange(-x_view, x_view, x_res)
+        x = arange(-x_view, x_view, x_res)
         plt.clf()
 
+        if any([x in equation for x in Plot.blacklist]):
+            return None 
+
+        y = eval(f"lambda x: {equation}")
         try:
-            plot = plt.plot(x, equation(x))
-        except Exception:
-            return
+            plot = plt.plot(x, y(x))
+        except Exception as e:
+            print(e)
 
         try:
-            if not image:
-                fig = plt.show(plot)
-                return fig
-            else:
-                p = path.join(f'images/tmp_plots/plot{time()}.png')
-                image = path.join(self.bot.resource_path, p)
-                with open(image, 'wb+') as f:
-                    plt.savefig(f,
-                                facecolor=(0, 0, 0, .30),
-                                transparent=True,
-                                format='png',
-                                bbox_inches='tight',
-                                pad_inches=0.0)
-                return p
+            img_path = os.path.join(self.bot.resource_path, f'images/tmp_plots/')
+            # make the path if it doesn't exist
+            if not os.path.exists(img_path):
+                os.makedirs(img_path)
+
+            img_name = f'plot{time()}.png'
+            img_path = os.path.join(img_path, img_name)
+
+            plt.savefig(img_path,
+                        facecolor=(0, 0, 0, .30),
+                        transparent=True,
+                        format='png',
+                        bbox_inches='tight',
+                        pad_inches=0.0)
+
+            return img_name
         except IOError as e:
             print(e)
 
@@ -141,12 +149,13 @@ class Plot(Cog):
     async def plot(self, ctx, *python_in: str):
         """[equation] - plots an equation if valid."""
         python_in = ' '.join(python_in)
+        valid_eq = python_in
 
-        valid_eq = None
-        p = self._plot_equation(valid_eq, image=True)
+        p = self._plot_equation(valid_eq, display=False)
 
         rh = self.bot.config['resource_host']
-        url = f'http://{rh}/{p}'
+        url = f'https://{rh}/images/tmp_plots/{p}'
+        print(url)
 
         await ctx.send(embed=Embed(colour=0xBADA55,
                                    description=valid_eq).set_image(url=url))
