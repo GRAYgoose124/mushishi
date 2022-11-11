@@ -29,13 +29,10 @@ class Jukebox(Cog):
         voice_channel = author.voice.channel
         search = (' ').join(search)
 
-        try:
-            self.vc = await voice_channel.connect()
-        except Exception as e:
-            print(e)
+
 
         fp = os.path.join(self.bot.resource_path,
-                            'videos', '%(title)s.%(ext)s')
+                            'music', '%(title)s.%(ext)s')
 
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -57,9 +54,15 @@ class Jukebox(Cog):
         result = None
         with YoutubeDL(ydl_opts) as ydl:
             result = ydl.extract_info(search, download=True)
-            
+
+        print(result['entries'][0])   
         fn = result['entries'][0]['title'] + '.' + result['entries'][0]['ext']
-        fp = os.path.join(self.bot.resource_path, 'videos', fn)
+        fp = os.path.join(self.bot.resource_path, 'music', fn.replace(' ', '_'))
+        
+        try:
+            self.vc = await voice_channel.connect()
+        except Exception as e:
+            print(e)
 
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(fp))
@@ -69,7 +72,7 @@ class Jukebox(Cog):
         except Exception as e:
             print(e)
 
-        await ctx.send(f"Now playing: {search}")
+        await ctx.send(f"Now playing: {fn}")
 
 
 
