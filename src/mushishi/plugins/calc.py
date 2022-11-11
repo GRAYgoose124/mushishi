@@ -122,9 +122,8 @@ class Plot(Cog):
                 fig = plt.show(plot)
                 return fig
             else:
-                dir_path = path.dirname(path.realpath(__file__))
                 p = path.join(f'images/tmp_plots/plot{time()}.png')
-                image = path.join(dir_path, 'resources', p)
+                image = path.join(self.bot.resource_path, p)
                 with open(image, 'wb+') as f:
                     plt.savefig(f,
                                 facecolor=(0, 0, 0, .30),

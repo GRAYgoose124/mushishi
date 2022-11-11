@@ -34,14 +34,6 @@ from discord.ext.commands import Cog
 # TODO: conv->factoid gen
 
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-db_path = os.path.join(dir_path, 'resources', 'data', 'facts.db')
-if os.name == 'nt':
-    db_path = f'sqlite:///{db_path}'
-else:
-    db_path = f'sqlite:////{db_path}'
-
-
 # create a regex function for sqlite and import it
 @sa.event.listens_for(sa.engine.Engine, 'connect')
 def sqlite_engine_connect(dbapi_conn, connection_record):
@@ -84,6 +76,12 @@ class Factoid(Cog):
     def __init__(self, bot):
         self.bot = bot
         self.last_triggered = {}
+
+        db_path = os.path.join(self.bot.resource_path, 'factoid.db')
+        if os.name == 'nt':
+            db_path = f'sqlite:///{db_path}'
+        else:
+            db_path = f'sqlite:////{db_path}'
 
         self.engine = create_engine(db_path)
         Fact.metadata.create_all(self.engine)

@@ -132,10 +132,10 @@ class Admin(Cog):
         print('---Finished Starting---')
 
     def _get_all_plugins(self):
-        self.bot.config['all_plugins'] = filter(lambda x: False if x is None else True, 
+        self.bot.config['all_plugins'] = list(filter(lambda x: False if x is None else True, 
                                                 [name[:-3] if '.py' in name else None 
                                                     # TODO modify this along with L:121 and the similar line in start
-                                                    for name in os.listdir(f"{os.getcwd()}/src/mushishi/plugins")])
+                                                    for name in os.listdir(f"{os.getcwd()}/src/mushishi/plugins")]))
 
 
 async def setup(bot):
