@@ -143,7 +143,6 @@ class Mushishi(commands.Bot):
     async def start(self):
         print("Core: Starting bot...")
         try:
-            # TODO: Broken because poetry doesn't install the package properly.
             await self.load_extension('mushishi.plugins.admin')
         except Exception as e:
             self.logger.error('Failed to load admin plugin.', exc_info=e)
