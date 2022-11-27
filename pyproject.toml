@@ -30,6 +30,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 mushi = "mushishi.__main__:main"
+mushishi = "mushishi.__main__:main"
 
 # define extras
 [tool.poetry.extras]

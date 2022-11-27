@@ -7,7 +7,7 @@
 changelog
 scratch*
 .vscode/*
-__pycache__/*
+**/__pycache__/*
 ../*g
 .pylintrc
 test*.*
@@ -19,3 +19,4 @@ TODO
 dist/*
 **/*.egg-info/*
 .venv/
+.env
