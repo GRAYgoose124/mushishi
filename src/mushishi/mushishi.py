@@ -122,7 +122,7 @@ class Mushishi(commands.Bot):
 
             # Dump default config to file.
             with open(self.config_file, 'w') as f:
-                json.dump(self.config, f)
+                json.dump(self.config, f, indent=2)
 
             if 'MUSHISHI_API_TOKEN' not in os.environ:
                 # Fail and tell the user to edit the config.
