@@ -24,7 +24,7 @@ Check the TODO for a glance at future plans.
     > poetry shell  # Only if you want a virtual environment.
 
     > poetry install
-    > mushi
+    > mushi -h
 ## Docker
 Container name: `mushishi`
 
