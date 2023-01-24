@@ -1,0 +1,9 @@
+    version: '3'
+
+    services:
+      mushishi:
+        image: graygoose/mushishi
+        container_name: mushishi
+        
+        environment:
+          MUSHISHI_API_TOKEN: ${MUSHISHI_API_TOKEN}

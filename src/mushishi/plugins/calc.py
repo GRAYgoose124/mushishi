@@ -118,6 +118,7 @@ class Plot(Cog):
             return None 
 
         y = eval(f"lambda x: {equation}")
+        print(equation)
         try:
             plot = plt.plot(x, y(x))
         except Exception as e:
@@ -139,7 +140,7 @@ class Plot(Cog):
                         bbox_inches='tight',
                         pad_inches=0.0)
 
-            return img_name
+            return img_path
         except IOError as e:
             print(e)
 
@@ -151,14 +152,12 @@ class Plot(Cog):
         python_in = ' '.join(python_in)
         valid_eq = python_in
 
-        p = self._plot_equation(valid_eq, display=False)
-
-        rh = self.bot.config['resource_host']
-        url = f'https://{rh}/images/tmp_plots/{p}'
-        print(url)
-
-        await ctx.send(embed=Embed(colour=0xBADA55,
-                                   description=valid_eq).set_image(url=url))
+        path = self._plot_equation(valid_eq, display=False)
+        embed = Embed(colour=0xBADA55, description=valid_eq)
+        embed.set_image(url=f"attachment://{path}")
+        print('presend')
+        print(f"{await ctx.send(file=path, embed=embed)}")
+        print(f"sent {embed=}")
 
 
 async def setup(bot):

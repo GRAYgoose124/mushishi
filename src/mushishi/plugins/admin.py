@@ -139,10 +139,17 @@ class Admin(Cog):
         print('---Finished Starting---')
 
     def _get_all_plugins(self):
+        cwd = os.path.join(os.path.dirname(__file__))
+        all_dirs = os.listdir(f"{cwd}")
+        site_plugin_dir = os.listdir(self.bot.plugins_path)
+        all_dirs.extend(site_plugin_dir)
+
+        print(all_dirs)
         self.bot.config['all_plugins'] = list(filter(lambda x: False if x is None else True, 
                                                 [name[:-3] if '.py' in name else None 
-                                                    # TODO modify this along with L:121 and the similar line in start
-                                                    for name in os.listdir(f"{os.getcwd()}/src/mushishi/plugins")]))
+                                                    # TODO modify this along with L:121 and the similar line in start.py
+                                                    # ROOT issue.
+                                                    for name in all_dirs]))
 
 
 async def setup(bot):

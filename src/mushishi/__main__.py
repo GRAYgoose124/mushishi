@@ -42,7 +42,7 @@ def get_config_path(custom_dir=None):
         if not os.path.isdir(config_dir):
             os.mkdir(config_dir)
     else:
-        config_dir = custom_dir or os.path.join(os.getenv('HOME'), '.config', 'mushishi')
+        config_dir = custom_dir or os.path.join(os.getenv('HOME'), '.mushishi')
         if not os.path.isdir(config_dir):
             os.mkdir(config_dir)
 

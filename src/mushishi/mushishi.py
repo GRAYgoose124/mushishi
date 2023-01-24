@@ -64,12 +64,11 @@ class Mushishi(commands.Bot):
         self.chat_history = None
 
         self.config_path = config_path
-        self.plugins_path = os.path.join(self.config_path, 'plugins')
-        self.resource_path = os.path.join(self.plugins_path, 'resources')
-        self.data_path = os.path.join(self.resource_path, 'data')
-
-        self.config_file = os.path.join(self.config_path, 'config.json')
-        self.ch_path = os.path.join(self.data_path, 'chat_history.json')
+        self.plugins_path = None
+        self.resource_path = None
+        self.data_path = None
+        self.config_file = None
+        self.ch_path = None
 
         self.__config_setup()
 
@@ -82,36 +81,52 @@ class Mushishi(commands.Bot):
         # Create each directory if it doesn't exist.
         if not os.path.isdir(self.config_path):
             os.mkdir(self.config_path)
+        
+        self.plugins_path = os.path.join(self.config_path, 'plugins')
         if not os.path.isdir(self.plugins_path):
             os.mkdir(self.plugins_path)
+
+        self.resource_path = os.path.join(self.plugins_path, 'resources')
         if not os.path.isdir(self.resource_path):
             os.mkdir(self.resource_path)
+
+        self.data_path = os.path.join(self.resource_path, 'data')
         if not os.path.isdir(self.data_path):
             os.mkdir(self.data_path)
             
         # Load the chat history.
-        with open(self.ch_path, mode='r') as f:
-            try:
-                self.chat_history = json.load(f)
-            # TODO: Don't use exceptions for this task.
-            except (json.decoder.JSONDecodeError, io.UnsupportedOperation):
-                print(self.logger)
-                self.logger.info("Chat history file is empty.")
-                self.chat_history = {}
+        self.ch_path = os.path.join(self.data_path, 'chat_history.json')
+        if os.path.isfile(self.ch_path):
+            with open(self.ch_path, mode='r') as f:
+                try:
+                    self.chat_history = json.load(f)
+                # TODO: Don't use exceptions for this task.
+                except (json.decoder.JSONDecodeError, io.UnsupportedOperation):
+                    print(self.logger)
+                    self.logger.info("Chat history file is empty.")
+                    self.chat_history = {}
+        else:
+            self.chat_history = {}
 
         # Load config or generate a new one.
+        self.config_file = os.path.join(self.config_path, 'config.json')
         if os.path.exists(self.config_file):
             with open(self.config_file, 'r') as f:
                 self.config = json.load(f)
         else:
             self.config = DEFAULT_CONFIG   
 
+            # chech if token exists in the system environment
+            if 'MUSHISHI_API_TOKEN' in os.environ:
+                self.config['token'] = os.environ['MUSHISHI_API_TOKEN']
+
             # Dump default config to file.
             with open(self.config_file, 'w') as f:
-                json.dump(self.config, f)
+                json.dump(self.config, f, indent=2)
 
-            # Fail and tell the user to edit the config.
-            raise FileNotFoundError("Please edit the generated config file to add your bot token.")
+            if 'MUSHISHI_API_TOKEN' not in os.environ:
+                # Fail and tell the user to edit the config.
+                raise FileNotFoundError("Please edit the generated config file to add your bot token.")
 
     async def on_message(self, m):
         bpfx = any([m.content.startswith(x) for x in self.config['prefixes']])
@@ -150,9 +165,11 @@ class Mushishi(commands.Bot):
         try:
             await super().start(self.config['token'])
         except discord.LoginFailure:
-            self.logger.error('Invalid token.')
+            self.logger.error(f'Invalid token. Please check your config file at {self.config_file}')
         except BotRestart:
             raise BotRestart
+        finally:
+            await self.logout()
 
     async def logout(self):
         self.save_chat()
